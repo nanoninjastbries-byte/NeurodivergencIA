@@ -1,1 +1,298 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f4f6f8;
+    color: #20242a;
+    min-height: 100vh;
+}
+
+/* CABEÇALHO */
+
+header {
+    background: white;
+    padding: 28px 8%;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.logo {
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -1px;
+}
+
+.logo span {
+    font-weight: 400;
+}
+
+header p {
+    margin-top: 6px;
+    color: #68717d;
+    font-size: 15px;
+}
+
+/* ÁREA PRINCIPAL */
+
+main {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 60px 20px;
+}
+
+.tela {
+    display: none;
+}
+
+.tela.ativa {
+    display: block;
+}
+
+/* CARTÕES */
+
+.card {
+    background: white;
+    border: 1px solid #e1e5e9;
+    border-radius: 18px;
+    padding: 36px;
+    margin-bottom: 24px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.04);
+}
+
+.principal {
+    text-align: center;
+    padding: 70px 45px;
+}
+
+.principal h1 {
+    font-size: 42px;
+    line-height: 1.15;
+    margin-bottom: 20px;
+}
+
+.principal p {
+    max-width: 650px;
+    margin: 0 auto 30px;
+    color: #626b76;
+    line-height: 1.7;
+    font-size: 17px;
+}
+
+h2 {
+    font-size: 27px;
+    margin-bottom: 8px;
+}
+
+.descricao {
+    color: #6b7280;
+    margin-bottom: 28px;
+}
+
+/* FORMULÁRIO */
+
+label {
+    display: block;
+    font-weight: 600;
+    margin: 18px 0 8px;
+}
+
+input,
+textarea {
+    width: 100%;
+    border: 1px solid #d6dbe1;
+    border-radius: 10px;
+    padding: 13px 14px;
+    font-size: 15px;
+    outline: none;
+    background: white;
+}
+
+input:focus,
+textarea:focus {
+    border-color: #59636e;
+}
+
+textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.linha {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+/* BOTÕES */
+
+button {
+    width: 100%;
+    border: none;
+    border-radius: 11px;
+    padding: 15px 20px;
+    margin-top: 28px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    background: #20242a;
+    color: white;
+    transition: 0.2s;
+}
+
+button:hover {
+    transform: translateY(-1px);
+    opacity: 0.9;
+}
+
+/* AVALIAÇÃO */
+
+.topo-avaliacao {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #68717d;
+    font-size: 14px;
+    margin-bottom: 14px;
+}
+
+.barra {
+    width: 100%;
+    height: 8px;
+    background: #e9edf1;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 35px;
+}
+
+#progresso {
+    height: 100%;
+    width: 4%;
+    background: #20242a;
+    transition: width 0.3s;
+}
+
+#pergunta {
+    font-size: 24px;
+    line-height: 1.4;
+    margin-bottom: 25px;
+}
+
+.alternativa {
+    width: 100%;
+    padding: 17px;
+    margin: 10px 0;
+    border: 1px solid #d8dde2;
+    border-radius: 11px;
+    background: white;
+    color: #20242a;
+    text-align: left;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.alternativa:hover {
+    background: #f4f6f8;
+}
+
+.alternativa.selecionada {
+    border-color: #20242a;
+    background: #eef0f2;
+}
+
+.dificuldade {
+    margin-top: 30px;
+}
+
+input[type="range"] {
+    padding: 0;
+    margin-top: 10px;
+}
+
+.escala {
+    display: flex;
+    justify-content: space-between;
+    color: #737b85;
+    font-size: 13px;
+    margin-top: 5px;
+}
+
+/* RESULTADOS */
+
+.resultados {
+    margin-top: 25px;
+}
+
+.resultado-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px;
+    border: 1px solid #e1e5e9;
+    border-radius: 11px;
+    margin-bottom: 10px;
+}
+
+.resultado-item strong {
+    font-size: 18px;
+}
+
+/* ATIVIDADES */
+
+#listaAtividades {
+    margin-top: 20px;
+    line-height: 1.7;
+    color: #555e68;
+}
+
+/* RODAPÉ */
+
+footer {
+    text-align: center;
+    padding: 25px 20px;
+    color: #7a838e;
+    font-size: 13px;
+}
+
+/* CELULAR */
+
+@media (max-width: 650px) {
+
+    header {
+        padding: 22px 20px;
+    }
+
+    .logo {
+        font-size: 25px;
+    }
+
+    main {
+        padding: 30px 15px;
+    }
+
+    .card {
+        padding: 25px 20px;
+    }
+
+    .principal {
+        padding: 45px 25px;
+    }
+
+    .principal h1 {
+        font-size: 32px;
+    }
+
+    .linha {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .topo-avaliacao {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+}
