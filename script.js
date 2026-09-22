@@ -1,203 +1,28 @@
 // ============================================================
-// NEURODIVERGÊNCIA — FUNCIONAMENTO DA INTERFACE
+// NEURODIVERGÊNCIA
+// CONEXÃO COM GOOGLE APPS SCRIPT + GEMINI
+// ============================================================
+
+const API_URL =
+    "https://script.google.com/macros/s/AKfycbwh_ihAxxU-eM7YSmDzX-rDP4XabCABM6OON0KKs3Gwx0vvSOCQRxTxUOj2ZAIRbppf/exec";
+
+
+// ============================================================
+// VARIÁVEIS
 // ============================================================
 
 let questaoAtual = 0;
+let questoes = [];
 let respostas = [];
+let inicioQuestao = 0;
+
+let dadosAluno = {};
 
 const estrategias = [
     "Divisão em etapas",
     "Apoio visual",
     "Instruções claras",
     "Repetição adaptativa"
-];
-
-
-// ============================================================
-// QUESTÕES DE TESTE
-// ============================================================
-
-const questoes = [
-
-    // DIVISÃO EM ETAPAS
-    {
-        estrategia: "Divisão em etapas",
-        pergunta: "Qual é o resultado de 12 + 8?",
-        alternativas: ["18", "20", "22", "24"],
-        correta: 1
-    },
-
-    {
-        estrategia: "Divisão em etapas",
-        pergunta: "Se você tem 20 balas e divide igualmente entre 4 pessoas, quantas balas cada pessoa recebe?",
-        alternativas: ["4", "5", "6", "8"],
-        correta: 1
-    },
-
-    {
-        estrategia: "Divisão em etapas",
-        pergunta: "Qual é o primeiro passo para resolver uma operação matemática?",
-        alternativas: [
-            "Ler e compreender a questão",
-            "Escolher qualquer resposta",
-            "Ignorar os dados",
-            "Pular para o final"
-        ],
-        correta: 0
-    },
-
-    {
-        estrategia: "Divisão em etapas",
-        pergunta: "Qual é o resultado de 5 × 6?",
-        alternativas: ["20", "25", "30", "35"],
-        correta: 2
-    },
-
-    {
-        estrategia: "Divisão em etapas",
-        pergunta: "Qual número vem depois de 39?",
-        alternativas: ["38", "40", "41", "49"],
-        correta: 1
-    },
-
-    {
-        estrategia: "Divisão em etapas",
-        pergunta: "Qual é a metade de 18?",
-        alternativas: ["6", "8", "9", "12"],
-        correta: 2
-    },
-
-
-    // APOIO VISUAL
-    {
-        estrategia: "Apoio visual",
-        pergunta: "Observe mentalmente: ★ ★ ★ ★. Quantas estrelas aparecem?",
-        alternativas: ["3", "4", "5", "6"],
-        correta: 1
-    },
-
-    {
-        estrategia: "Apoio visual",
-        pergunta: "Imagine três grupos com 2 objetos em cada grupo. Quantos objetos existem ao todo?",
-        alternativas: ["5", "6", "7", "8"],
-        correta: 1
-    },
-
-    {
-        estrategia: "Apoio visual",
-        pergunta: "Qual forma possui três lados?",
-        alternativas: ["Círculo", "Quadrado", "Triângulo", "Retângulo"],
-        correta: 2
-    },
-
-    {
-        estrategia: "Apoio visual",
-        pergunta: "Imagine uma sequência: ● ▲ ● ▲ ●. Qual símbolo vem depois?",
-        alternativas: ["●", "▲", "■", "◆"],
-        correta: 1
-    },
-
-    {
-        estrategia: "Apoio visual",
-        pergunta: "Um semáforo possui três cores principais. Quantas são?",
-        alternativas: ["2", "3", "4", "5"],
-        correta: 1
-    },
-
-    {
-        estrategia: "Apoio visual",
-        pergunta: "Qual objeto geralmente possui formato circular?",
-        alternativas: ["Bola", "Livro", "Régua", "Caixa"],
-        correta: 0
-    },
-
-
-    // INSTRUÇÕES CLARAS
-    {
-        estrategia: "Instruções claras",
-        pergunta: "Leia: 'Escolha o número maior entre 7 e 4.' Qual é a resposta?",
-        alternativas: ["4", "7", "11", "3"],
-        correta: 1
-    },
-
-    {
-        estrategia: "Instruções claras",
-        pergunta: "Leia: 'Some 10 e 5.' Qual é o resultado?",
-        alternativas: ["10", "12", "15", "20"],
-        correta: 2
-    },
-
-    {
-        estrategia: "Instruções claras",
-        pergunta: "Leia: 'Escolha a palavra que representa um animal.'",
-        alternativas: ["Mesa", "Cachorro", "Caderno", "Janela"],
-        correta: 1
-    },
-
-    {
-        estrategia: "Instruções claras",
-        pergunta: "Leia: 'Subtraia 3 de 10.' Qual é o resultado?",
-        alternativas: ["5", "6", "7", "8"],
-        correta: 2
-    },
-
-    {
-        estrategia: "Instruções claras",
-        pergunta: "Leia: 'Complete a sequência: 2, 4, 6, __.'",
-        alternativas: ["7", "8", "9", "10"],
-        correta: 1
-    },
-
-    {
-        estrategia: "Instruções claras",
-        pergunta: "Leia: 'Qual é a primeira letra da palavra CASA?'",
-        alternativas: ["A", "C", "S", "T"],
-        correta: 1
-    },
-
-
-    // REPETIÇÃO ADAPTATIVA
-    {
-        estrategia: "Repetição adaptativa",
-        pergunta: "Qual é o resultado de 3 + 3?",
-        alternativas: ["5", "6", "7", "8"],
-        correta: 1
-    },
-
-    {
-        estrategia: "Repetição adaptativa",
-        pergunta: "Qual é o resultado de 4 + 4?",
-        alternativas: ["6", "7", "8", "9"],
-        correta: 2
-    },
-
-    {
-        estrategia: "Repetição adaptativa",
-        pergunta: "Qual é o resultado de 5 + 5?",
-        alternativas: ["8", "9", "10", "11"],
-        correta: 2
-    },
-
-    {
-        estrategia: "Repetição adaptativa",
-        pergunta: "Qual é o resultado de 6 + 6?",
-        alternativas: ["10", "11", "12", "13"],
-        correta: 2
-    },
-
-    {
-        estrategia: "Repetição adaptativa",
-        pergunta: "Qual é o resultado de 7 + 7?",
-        alternativas: ["12", "13", "14", "15"],
-        correta: 2
-    },
-
-    {
-        estrategia: "Repetição adaptativa",
-        pergunta: "Qual é o resultado de 8 + 8?",
-        alternativas: ["14", "15", "16", "18"],
-        correta: 2
-    }
 ];
 
 
@@ -211,7 +36,11 @@ function mostrarTela(id) {
         tela.classList.remove("ativa");
     });
 
-    document.getElementById(id).classList.add("ativa");
+    const tela = document.getElementById(id);
+
+    if (tela) {
+        tela.classList.add("ativa");
+    }
 
     window.scrollTo({
         top: 0,
@@ -221,30 +50,150 @@ function mostrarTela(id) {
 
 
 // ============================================================
+// CHAMAR GOOGLE APPS SCRIPT
+// ============================================================
+
+async function chamarAPI(payload) {
+
+    const resposta = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+        },
+        body: JSON.stringify(payload)
+    });
+
+    if (!resposta.ok) {
+        throw new Error(
+            "Não foi possível conectar ao servidor."
+        );
+    }
+
+    const dados = await resposta.json();
+
+    if (!dados.sucesso) {
+        throw new Error(
+            dados.erro || "Erro desconhecido no servidor."
+        );
+    }
+
+    return dados.dados;
+}
+
+
+// ============================================================
 // INICIAR AVALIAÇÃO
 // ============================================================
 
-function iniciarAvaliacao() {
+async function iniciarAvaliacao() {
 
-    const nome = document.getElementById("nome").value.trim();
-    const idade = document.getElementById("idade").value.trim();
-    const ano = document.getElementById("ano").value.trim();
-    const materia = document.getElementById("materia").value.trim();
-    const conteudo = document.getElementById("conteudo").value.trim();
+    const nome =
+        document.getElementById("nome").value.trim();
+
+    const idade =
+        document.getElementById("idade").value.trim();
+
+    const ano =
+        document.getElementById("ano").value.trim();
+
+    const materia =
+        document.getElementById("materia").value.trim();
+
+    const conteudo =
+        document.getElementById("conteudo").value.trim();
+
+    const observacoes =
+        document.getElementById("observacoes").value.trim();
+
 
     if (!nome || !idade || !ano || !materia || !conteudo) {
 
-        alert("Preencha todos os campos obrigatórios.");
+        alert(
+            "Preencha todos os campos obrigatórios."
+        );
 
         return;
     }
 
-    questaoAtual = 0;
-    respostas = [];
 
-    mostrarTela("avaliacao");
+    dadosAluno = {
+        nome,
+        idade,
+        ano,
+        materia,
+        conteudo,
+        observacoes
+    };
 
-    mostrarQuestao();
+
+    const botao =
+        document.querySelector(
+            '#configuracao button'
+        );
+
+    botao.disabled = true;
+
+    botao.textContent =
+        "Preparando avaliação...";
+
+
+    try {
+
+        mostrarTela("avaliacao");
+
+        document.getElementById("pergunta").textContent =
+            "A inteligência artificial está preparando sua avaliação...";
+
+        document.getElementById("alternativas").innerHTML =
+            "";
+
+        const resultado = await chamarAPI({
+
+            acao: "gerar_avaliacao",
+
+            ...dadosAluno
+
+        });
+
+
+        if (
+            !resultado.questoes ||
+            resultado.questoes.length !== 18
+        ) {
+
+            throw new Error(
+                "A IA não retornou as 18 questões esperadas."
+            );
+        }
+
+
+        questoes = resultado.questoes;
+
+        questaoAtual = 0;
+        respostas = [];
+
+        mostrarQuestao();
+
+
+    } catch (erro) {
+
+        console.error(erro);
+
+        mostrarTela("configuracao");
+
+        alert(
+            "Não foi possível preparar a avaliação.\n\n" +
+            erro.message
+        );
+
+
+    } finally {
+
+        botao.disabled = false;
+
+        botao.textContent =
+            "Iniciar avaliação";
+    }
 }
 
 
@@ -254,44 +203,69 @@ function iniciarAvaliacao() {
 
 function mostrarQuestao() {
 
-    const questao = questoes[questaoAtual];
+    const questao =
+        questoes[questaoAtual];
+
+
+    if (!questao) {
+        finalizarAvaliacao();
+        return;
+    }
+
 
     document.getElementById("contador").textContent =
         `Questão ${questaoAtual + 1} de ${questoes.length}`;
 
+
     document.getElementById("estrategia").textContent =
         questao.estrategia;
+
 
     document.getElementById("pergunta").textContent =
         questao.pergunta;
 
+
     const progresso =
-        ((questaoAtual + 1) / questoes.length) * 100;
+        ((questaoAtual + 1) / 24) * 100;
+
 
     document.getElementById("progresso").style.width =
         `${progresso}%`;
 
+
     const alternativas =
         document.getElementById("alternativas");
 
+
     alternativas.innerHTML = "";
 
-    questao.alternativas.forEach((alternativa, indice) => {
 
-        const botao = document.createElement("button");
+    questao.alternativas.forEach(
+        (alternativa, indice) => {
 
-        botao.className = "alternativa";
+            const botao =
+                document.createElement("button");
 
-        botao.textContent = alternativa;
+            botao.className =
+                "alternativa";
 
-        botao.onclick = () => selecionarAlternativa(indice);
+            botao.textContent =
+                alternativa;
 
-        alternativas.appendChild(botao);
-    });
+            botao.onclick = () =>
+                selecionarAlternativa(indice);
+
+
+            alternativas.appendChild(botao);
+        }
+    );
+
 
     document.getElementById("dificuldade").value = 3;
 
     document.getElementById("proxima").disabled = true;
+
+    inicioQuestao = Date.now();
 }
 
 
@@ -301,27 +275,63 @@ function mostrarQuestao() {
 
 function selecionarAlternativa(indice) {
 
-    document.querySelectorAll(".alternativa").forEach(botao => {
-        botao.classList.remove("selecionada");
-    });
+    document
+        .querySelectorAll(".alternativa")
+        .forEach(botao => {
+
+            botao.classList.remove(
+                "selecionada"
+            );
+
+        });
+
 
     const botoes =
-        document.querySelectorAll(".alternativa");
+        document.querySelectorAll(
+            ".alternativa"
+        );
 
-    botoes[indice].classList.add("selecionada");
 
-    document.getElementById("proxima").disabled = false;
+    botoes[indice].classList.add(
+        "selecionada"
+    );
+
+
+    const questao =
+        questoes[questaoAtual];
+
+
+    const tempo =
+        Math.round(
+            (Date.now() - inicioQuestao) / 1000
+        );
+
 
     respostas[questaoAtual] = {
 
-        estrategia: questoes[questaoAtual].estrategia,
+        estrategia:
+            questao.estrategia,
 
         correta:
-            indice === questoes[questaoAtual].correta,
+            indice === questao.correta,
 
         dificuldade:
-            Number(document.getElementById("dificuldade").value)
+            Number(
+                document.getElementById(
+                    "dificuldade"
+                ).value
+            ),
+
+        tempo: tempo,
+
+        resposta:
+            questao.alternativas[indice]
     };
+
+
+    document.getElementById(
+        "proxima"
+    ).disabled = false;
 }
 
 
@@ -329,105 +339,467 @@ function selecionarAlternativa(indice) {
 // PRÓXIMA QUESTÃO
 // ============================================================
 
-function proximaQuestao() {
+async function proximaQuestao() {
 
     if (!respostas[questaoAtual]) {
 
-        alert("Escolha uma alternativa antes de continuar.");
+        alert(
+            "Escolha uma alternativa antes de continuar."
+        );
 
         return;
     }
 
+
     questaoAtual++;
 
-    if (questaoAtual < questoes.length) {
+
+    if (
+        questaoAtual <
+        questoes.length
+    ) {
 
         mostrarQuestao();
 
-    } else {
+        return;
+    }
+
+
+    // Terminou as 18 iniciais
+    await gerarQuestaoAdaptativa();
+}
+
+
+// ============================================================
+// GERAR 6 QUESTÕES ADAPTATIVAS
+// ============================================================
+
+async function gerarQuestaoAdaptativa() {
+
+    const botao =
+        document.getElementById("proxima");
+
+    botao.disabled = true;
+
+    botao.textContent =
+        "Analisando desempenho...";
+
+
+    try {
+
+        const resultados =
+            calcularResultados();
+
+
+        const resultado =
+            await chamarAPI({
+
+                acao: "gerar_adaptativas",
+
+                ...dadosAluno,
+
+                resultados:
+                    resultados
+            });
+
+
+        if (
+            !resultado.questoes ||
+            resultado.questoes.length !== 6
+        ) {
+
+            throw new Error(
+                "A IA não retornou as 6 questões adaptativas."
+            );
+        }
+
+
+        questoes =
+            questoes.concat(
+                resultado.questoes
+            );
+
+
+        mostrarQuestao();
+
+
+    } catch (erro) {
+
+        console.error(erro);
+
+        alert(
+            "Erro ao gerar as questões adaptativas.\n\n" +
+            erro.message
+        );
 
         mostrarResultado();
+
+
+    } finally {
+
+        botao.disabled = false;
+
+        botao.textContent =
+            "Próxima questão";
     }
 }
 
 
 // ============================================================
-// RESULTADO
+// CALCULAR RESULTADOS
+// ============================================================
+
+function calcularResultados() {
+
+    const resultados = {};
+
+
+    estrategias.forEach(
+        estrategia => {
+
+            resultados[estrategia] = {
+
+                total: 0,
+
+                acertos: 0,
+
+                tempoTotal: 0,
+
+                dificuldadeTotal: 0
+            };
+        }
+    );
+
+
+    respostas.forEach(
+        resposta => {
+
+            if (!resposta) {
+                return;
+            }
+
+
+            const dados =
+                resultados[
+                    resposta.estrategia
+                ];
+
+
+            if (!dados) {
+                return;
+            }
+
+
+            dados.total++;
+
+
+            if (resposta.correta) {
+                dados.acertos++;
+            }
+
+
+            dados.tempoTotal +=
+                resposta.tempo || 0;
+
+
+            dados.dificuldadeTotal +=
+                resposta.dificuldade || 3;
+        }
+    );
+
+
+    estrategias.forEach(
+        estrategia => {
+
+            const dados =
+                resultados[estrategia];
+
+
+            dados.porcentagem =
+                dados.total > 0
+                    ? Math.round(
+                        (
+                            dados.acertos /
+                            dados.total
+                        ) * 100
+                    )
+                    : 0;
+
+
+            dados.tempoMedio =
+                dados.total > 0
+                    ? Math.round(
+                        dados.tempoTotal /
+                        dados.total
+                    )
+                    : 0;
+
+
+            dados.dificuldadeMedia =
+                dados.total > 0
+                    ? (
+                        dados.dificuldadeTotal /
+                        dados.total
+                    ).toFixed(1)
+                    : "0";
+        }
+    );
+
+
+    return resultados;
+}
+
+
+// ============================================================
+// FINALIZAR AVALIAÇÃO
+// ============================================================
+
+function finalizarAvaliacao() {
+
+    mostrarResultado();
+}
+
+
+// ============================================================
+// MOSTRAR RESULTADO
 // ============================================================
 
 function mostrarResultado() {
 
     mostrarTela("resultado");
 
-    const resultados = {};
 
-    estrategias.forEach(estrategia => {
-        resultados[estrategia] = {
-            total: 0,
-            acertos: 0
-        };
-    });
+    const resultados =
+        calcularResultados();
 
-    respostas.forEach(resposta => {
-
-        resultados[resposta.estrategia].total++;
-
-        if (resposta.correta) {
-            resultados[resposta.estrategia].acertos++;
-        }
-    });
 
     const porcentagens = [];
 
-    estrategias.forEach((estrategia, indice) => {
 
-        const dados = resultados[estrategia];
+    estrategias.forEach(
+        (estrategia, indice) => {
 
-        const porcentagem =
-            dados.total > 0
-                ? Math.round((dados.acertos / dados.total) * 100)
-                : 0;
+            const dados =
+                resultados[estrategia];
 
-        porcentagens.push(porcentagem);
 
-        document.getElementById(
-            `resultado${indice + 1}`
-        ).textContent = `${porcentagem}%`;
-    });
+            const porcentagem =
+                dados.porcentagem;
 
-    const maior = Math.max(...porcentagens);
+
+            porcentagens.push(
+                porcentagem
+            );
+
+
+            document.getElementById(
+                `resultado${indice + 1}`
+            ).textContent =
+                `${porcentagem}%`;
+        }
+    );
+
+
+    const maior =
+        Math.max(...porcentagens);
+
 
     const melhorIndice =
         porcentagens.indexOf(maior);
 
+
     const melhorEstrategia =
         estrategias[melhorIndice];
 
-    document.getElementById("mensagemResultado").innerHTML =
-        `A avaliação foi concluída. A estratégia que apresentou o maior desempenho nesta avaliação foi <strong>${melhorEstrategia}</strong>, com ${maior}% de acertos.`;
+
+    dadosAluno.melhorEstrategia =
+        melhorEstrategia;
+
+
+    document.getElementById(
+        "mensagemResultado"
+    ).innerHTML =
+
+        `A avaliação foi concluída. ` +
+        `A estratégia que apresentou o maior ` +
+        `desempenho nesta avaliação foi ` +
+        `<strong>${melhorEstrategia}</strong>, ` +
+        `com ${maior}% de acertos.`;
 }
 
 
 // ============================================================
-// ATIVIDADES ADAPTADAS
+// GERAR ATIVIDADES ADAPTADAS
 // ============================================================
 
-function gerarAtividades() {
+async function gerarAtividades() {
 
-    const mensagem =
-        document.getElementById("listaAtividades");
+    const area =
+        document.getElementById(
+            "listaAtividades"
+        );
 
-    mensagem.innerHTML = `
+
+    area.innerHTML = `
         <p>
-            As atividades adaptadas serão geradas pela
-            inteligência artificial após a conexão com a Gemini API.
-        </p>
-
-        <br>
-
-        <p>
-            Nesta versão inicial, a estrutura da plataforma já está
-            preparada para receber essa função.
+            A inteligência artificial está
+            preparando as atividades adaptadas...
         </p>
     `;
+
+
+    try {
+
+        const resultados =
+            calcularResultados();
+
+
+        const resultado =
+            await chamarAPI({
+
+                acao: "gerar_atividades",
+
+                ...dadosAluno,
+
+                resultados:
+                    resultados,
+
+                melhorEstrategia:
+                    dadosAluno.melhorEstrategia
+            });
+
+
+        if (
+            !resultado.atividades ||
+            !resultado.atividades.length
+        ) {
+
+            throw new Error(
+                "A IA não retornou atividades."
+            );
+        }
+
+
+        area.innerHTML = "";
+
+
+        resultado.atividades.forEach(
+            (atividade, indice) => {
+
+                const div =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                div.style.marginBottom =
+                    "25px";
+
+
+                const titulo =
+                    document.createElement(
+                        "h3"
+                    );
+
+
+                titulo.textContent =
+                    `${indice + 1}. ${atividade.titulo}`;
+
+
+                const descricao =
+                    document.createElement(
+                        "p"
+                    );
+
+
+                descricao.textContent =
+                    atividade.descricao;
+
+
+                const questao =
+                    document.createElement(
+                        "p"
+                    );
+
+
+                questao.textContent =
+                    atividade.questao;
+
+
+                div.appendChild(titulo);
+
+                div.appendChild(descricao);
+
+                div.appendChild(questao);
+
+
+                if (
+                    atividade.alternativas &&
+                    atividade.alternativas.length
+                ) {
+
+                    const lista =
+                        document.createElement(
+                            "ol"
+                        );
+
+
+                    atividade.alternativas.forEach(
+                        alternativa => {
+
+                            const item =
+                                document.createElement(
+                                    "li"
+                                );
+
+                            item.textContent =
+                                alternativa;
+
+                            lista.appendChild(
+                                item
+                            );
+                        }
+                    );
+
+
+                    div.appendChild(lista);
+                }
+
+
+                area.appendChild(div);
+            }
+        );
+
+
+    } catch (erro) {
+
+        console.error(erro);
+
+
+        area.innerHTML = `
+            <p>
+                Não foi possível gerar as
+                atividades adaptadas.
+            </p>
+
+            <p>
+                ${escapeHTML(erro.message)}
+            </p>
+        `;
+    }
+}
+
+
+// ============================================================
+// PROTEÇÃO DE TEXTO
+// ============================================================
+
+function escapeHTML(texto) {
+
+    return String(texto)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
 }
