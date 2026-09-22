@@ -1,1 +1,259 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <title>NeurodivergêncIA</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">
+            Neurodivergênc<span>IA</span>
+        </div>
+
+        <p>
+            Aprendizagem personalizada por inteligência artificial
+        </p>
+    </header>
+
+
+    <main>
+
+        <!-- TELA INICIAL -->
+
+        <section id="inicio" class="tela ativa">
+
+            <div class="card principal">
+
+                <h1>
+                    Aprender de uma forma que faça sentido.
+                </h1>
+
+                <p>
+                    A NeurodivergêncIA analisa diferentes estratégias
+                    pedagógicas para identificar quais apresentam melhores
+                    resultados para cada estudante.
+                </p>
+
+                <button onclick="mostrarTela('configuracao')">
+                    Começar avaliação
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- CONFIGURAÇÃO -->
+
+        <section id="configuracao" class="tela">
+
+            <div class="card">
+
+                <h2>Configuração</h2>
+
+                <p class="descricao">
+                    Preencha as informações para iniciar a avaliação.
+                </p>
+
+                <label>Nome do estudante</label>
+                <input
+                    type="text"
+                    id="nome"
+                    placeholder="Digite o nome"
+                >
+
+                <div class="linha">
+
+                    <div>
+                        <label>Idade</label>
+
+                        <input
+                            type="number"
+                            id="idade"
+                            placeholder="Idade"
+                        >
+                    </div>
+
+                    <div>
+                        <label>Ano escolar</label>
+
+                        <input
+                            type="text"
+                            id="ano"
+                            placeholder="Ex.: 7º ano"
+                        >
+                    </div>
+
+                </div>
+
+                <label>Matéria</label>
+
+                <input
+                    type="text"
+                    id="materia"
+                    placeholder="Ex.: Matemática"
+                >
+
+                <label>Conteúdo</label>
+
+                <input
+                    type="text"
+                    id="conteudo"
+                    placeholder="Ex.: Frações"
+                >
+
+                <label>Observações</label>
+
+                <textarea
+                    id="observacoes"
+                    placeholder="Informações adicionais"
+                ></textarea>
+
+                <button onclick="iniciarAvaliacao()">
+                    Iniciar avaliação
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- AVALIAÇÃO -->
+
+        <section id="avaliacao" class="tela">
+
+            <div class="card">
+
+                <div class="topo-avaliacao">
+
+                    <span id="contador">
+                        Questão 1 de 24
+                    </span>
+
+                    <span id="estrategia">
+                        Estratégia
+                    </span>
+
+                </div>
+
+                <div class="barra">
+                    <div id="progresso"></div>
+                </div>
+
+                <h2 id="pergunta">
+                    A pergunta aparecerá aqui.
+                </h2>
+
+                <div id="alternativas">
+
+                </div>
+
+                <div class="dificuldade">
+
+                    <label>
+                        Qual foi o nível de dificuldade?
+                    </label>
+
+                    <input
+                        type="range"
+                        id="dificuldade"
+                        min="1"
+                        max="5"
+                        value="3"
+                    >
+
+                    <div class="escala">
+                        <span>Fácil</span>
+                        <span>Difícil</span>
+                    </div>
+
+                </div>
+
+                <button
+                    id="proxima"
+                    onclick="proximaQuestao()"
+                >
+                    Próxima questão
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- RESULTADO -->
+
+        <section id="resultado" class="tela">
+
+            <div class="card">
+
+                <h2>Resultado da avaliação</h2>
+
+                <p id="mensagemResultado">
+                    Analisando os resultados...
+                </p>
+
+                <div class="resultados">
+
+                    <div class="resultado-item">
+                        <span>Divisão em etapas</span>
+                        <strong id="resultado1">--</strong>
+                    </div>
+
+                    <div class="resultado-item">
+                        <span>Apoio visual</span>
+                        <strong id="resultado2">--</strong>
+                    </div>
+
+                    <div class="resultado-item">
+                        <span>Instruções claras</span>
+                        <strong id="resultado3">--</strong>
+                    </div>
+
+                    <div class="resultado-item">
+                        <span>Repetição adaptativa</span>
+                        <strong id="resultado4">--</strong>
+                    </div>
+
+                </div>
+
+                <button onclick="gerarAtividades()">
+                    Gerar atividades adaptadas
+                </button>
+
+            </div>
+
+
+            <div
+                class="card"
+                id="atividades"
+            >
+
+                <h2>Atividades adaptadas</h2>
+
+                <div id="listaAtividades">
+                    As atividades aparecerão aqui.
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <footer>
+        NeurodivergêncIA — Tecnologia para uma aprendizagem mais personalizada
+    </footer>
+
+
+    <script src="script.js"></script>
+
+</body>
+</html>
