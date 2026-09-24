@@ -529,8 +529,6 @@ function normalizarQuestao(q) {
     let visual = q.visual || "";
 
 
-    // Mantém objeto do mapa mental
-    // sem transformá-lo em string.
     if (
         typeof visual === "object" &&
         visual !== null
@@ -845,10 +843,6 @@ function renderizarVisual(visual) {
     }
 
 
-    // ========================================================
-    // MAPA MENTAL
-    // ========================================================
-
     if (
         typeof visual === "object" &&
         visual.tipo === "mapa_mental"
@@ -973,10 +967,6 @@ function renderizarVisual(visual) {
         return;
     }
 
-
-    // ========================================================
-    // VISUAL ANTIGO / TEXTO
-    // ========================================================
 
     bloco.classList.remove(
         "oculto"
@@ -1153,7 +1143,6 @@ async function proximaQuestao() {
     }
 
 
-    // Terminou as 18 iniciais
     if (
         questoesAdaptativas.length === 0
     ) {
@@ -1164,7 +1153,6 @@ async function proximaQuestao() {
     }
 
 
-    // Terminou as 24
     finalizarAvaliacao();
 }
 
@@ -1736,29 +1724,65 @@ function reiniciar() {
 // REQUISIÇÃO
 // ============================================================
 
-async function fazerRequisicao(
-    payload
-) {
+async function fazerRequisicao(payload) {
 
-    const resposta =
-        await fetch(
-            API_URL,
-            {
-                method: "POST",
+    let resposta;
 
-                headers: {
-                    "Content-Type":
-                        "text/plain;charset=utf-8"
-                },
+    try {
 
-                body:
-                    JSON.stringify(payload)
-            }
+        resposta =
+            await fetch(
+                API_URL,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "text/plain;charset=utf-8"
+                    },
+
+                    body:
+                        JSON.stringify(payload),
+
+                    redirect:
+                        "follow"
+                }
+            );
+
+    } catch (erro) {
+
+        throw new Error(
+            "Não foi possível conectar ao servidor: " +
+            erro.message
         );
+    }
 
 
     const texto =
         await resposta.text();
+
+
+    console.log(
+        "Status HTTP:",
+        resposta.status
+    );
+
+
+    console.log(
+        "Resposta do Apps Script:",
+        texto
+    );
+
+
+    if (
+        !texto ||
+        !texto.trim()
+    ) {
+
+        throw new Error(
+            "O servidor não retornou nenhum conteúdo."
+        );
+    }
 
 
     let dados;
@@ -1771,19 +1795,39 @@ async function fazerRequisicao(
 
     } catch (erro) {
 
+        console.error(
+            "Resposta completa recebida:",
+            texto
+        );
+
+
         throw new Error(
-            "O servidor retornou uma resposta inválida."
+            "O Apps Script não retornou JSON. " +
+            "Resposta recebida: " +
+            texto.substring(0, 500)
         );
     }
 
 
     if (
+        dados &&
         dados.ok === false
     ) {
 
         throw new Error(
             dados.erro ||
             "Erro desconhecido no servidor."
+        );
+    }
+
+
+    if (
+        !dados ||
+        typeof dados !== "object"
+    ) {
+
+        throw new Error(
+            "O servidor retornou dados inválidos."
         );
     }
 
