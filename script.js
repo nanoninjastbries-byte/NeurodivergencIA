@@ -1,3 +1,4 @@
+```javascript
 // ============================================================
 // NEURODIVERGÊNCIA — SCRIPT.JS
 // ============================================================
@@ -13,23 +14,14 @@ const ESTRATEGIAS = [
 ];
 
 let dadosAluno = {};
-
 let questoes = [];
-
 let respostas = [];
-
 let questaoAtual = 0;
-
 let inicioQuestao = null;
-
 let alternativaSelecionada = null;
-
 let questoesIniciais = [];
-
 let questoesAdaptativas = [];
-
 let estrategiaEscolhida = "";
-
 let avaliacaoFinalizada = false;
 
 
@@ -141,18 +133,18 @@ function mostrarTela(id) {
     document
         .querySelectorAll(".tela")
         .forEach(function (tela) {
-
             tela.classList.remove("ativa");
-
         });
 
 
     const tela =
         document.getElementById(id);
 
+
     if (tela) {
         tela.classList.add("ativa");
     }
+
 
     window.scrollTo({
         top: 0,
@@ -255,14 +247,16 @@ async function iniciarAvaliacao(event) {
             "btnIniciarExercicios"
         );
 
-    btn.classList.add("oculto");
+
+    if (btn) {
+        btn.classList.add("oculto");
+        btn.style.display = "none";
+    }
 
 
     try {
 
         await gerarQuestoesIniciais();
-
-        btn.classList.remove("oculto");
 
     } catch (erroGeracao) {
 
@@ -348,6 +342,30 @@ async function gerarQuestoesIniciais() {
 
 
     atualizarContador();
+
+
+    // ========================================================
+    // CORREÇÃO: MOSTRAR BOTÃO DE COMEÇAR
+    // ========================================================
+
+    const btn =
+        document.getElementById(
+            "btnIniciarExercicios"
+        );
+
+
+    if (btn) {
+
+        btn.classList.remove(
+            "oculto"
+        );
+
+        btn.style.display =
+            "block";
+
+        btn.disabled =
+            false;
+    }
 }
 
 
@@ -358,6 +376,7 @@ async function gerarQuestoesIniciais() {
 function organizarQuestoesIniciais(lista) {
 
     const grupos = {};
+
 
     ESTRATEGIAS
         .slice(0, 3)
@@ -376,14 +395,13 @@ function organizarQuestoesIniciais(lista) {
             normalizada.estrategia;
 
 
-        if (
-            !grupos[estrategia]
-        ) {
+        if (!grupos[estrategia]) {
 
             if (
                 normalizada.estrategia ===
                 "Apoio visual"
             ) {
+
                 estrategia =
                     "Apoio visual";
 
@@ -391,10 +409,12 @@ function organizarQuestoesIniciais(lista) {
                 normalizada.estrategia ===
                 "Instruções claras"
             ) {
+
                 estrategia =
                     "Instruções claras";
 
             } else {
+
                 estrategia =
                     "Divisão em etapas";
             }
@@ -413,6 +433,7 @@ function organizarQuestoesIniciais(lista) {
 
     const resultado = [];
 
+
     [
         "Divisão em etapas",
         "Apoio visual",
@@ -421,6 +442,7 @@ function organizarQuestoesIniciais(lista) {
 
         const grupo =
             grupos[nome] || [];
+
 
         if (grupo.length !== 6) {
 
@@ -432,6 +454,7 @@ function organizarQuestoesIniciais(lista) {
                 " questões em vez de 6."
             );
         }
+
 
         resultado.push.apply(
             resultado,
@@ -461,7 +484,9 @@ function iniciarExercicios() {
 
     avaliacaoFinalizada = false;
 
+
     mostrarTela("avaliacao");
+
 
     mostrarQuestao();
 }
@@ -492,7 +517,9 @@ function normalizarQuestao(q) {
         correta === undefined ||
         correta === null
     ) {
-        correta = q.correta;
+
+        correta =
+            q.correta;
     }
 
 
@@ -507,41 +534,56 @@ function normalizarQuestao(q) {
             D: 3
         };
 
+
         const letra =
             correta
                 .trim()
                 .toUpperCase();
 
+
         if (
             letras[letra] !== undefined
         ) {
+
             correta =
                 letras[letra];
+
         } else if (
             !isNaN(Number(correta))
         ) {
+
             correta =
                 Number(correta);
         }
     }
 
 
-    let visual = q.visual || "";
+    let visual =
+        q.visual || "";
 
 
     if (
         typeof visual === "object" &&
         visual !== null
     ) {
+
         visual = {
-            tipo: visual.tipo || "",
-            titulo: visual.titulo || "",
-            centro: visual.centro || "",
-            ramos: Array.isArray(
-                visual.ramos
-            )
-                ? visual.ramos
-                : []
+
+            tipo:
+                visual.tipo || "",
+
+            titulo:
+                visual.titulo || "",
+
+            centro:
+                visual.centro || "",
+
+            ramos:
+                Array.isArray(
+                    visual.ramos
+                )
+                    ? visual.ramos
+                    : []
         };
     }
 
@@ -567,8 +609,7 @@ function normalizarQuestao(q) {
             q.explicacao || "",
 
         estrategia:
-            q.estrategia ||
-            "",
+            q.estrategia || "",
 
         passos:
             Array.isArray(q.passos)
@@ -604,19 +645,26 @@ function mostrarQuestao() {
         "feedback"
     ).innerHTML = "";
 
+
     document.getElementById(
         "feedback"
-    ).classList.add("oculto");
+    ).classList.add(
+        "oculto"
+    );
 
 
     document.getElementById(
         "registrarResposta"
-    ).classList.remove("oculto");
+    ).classList.remove(
+        "oculto"
+    );
 
 
     document.getElementById(
         "proxima"
-    ).classList.add("oculto");
+    ).classList.add(
+        "oculto"
+    );
 
 
     document.getElementById(
@@ -627,7 +675,9 @@ function mostrarQuestao() {
     document.getElementById(
         "pergunta"
     ).innerHTML =
-        escaparHTML(q.pergunta);
+        escaparHTML(
+            q.pergunta
+        );
 
 
     document.getElementById(
@@ -639,9 +689,16 @@ function mostrarQuestao() {
 
     atualizarContador();
 
-    renderizarPassos(q.passos);
 
-    renderizarVisual(q.visual);
+    renderizarPassos(
+        q.passos
+    );
+
+
+    renderizarVisual(
+        q.visual
+    );
+
 
     renderizarAlternativas(
         q.alternativas
@@ -662,6 +719,7 @@ function atualizarContador() {
     const total =
         questoes.length;
 
+
     const atual =
         questaoAtual + 1;
 
@@ -669,19 +727,23 @@ function atualizarContador() {
     document.getElementById(
         "contador"
     ).textContent =
-        atual + " / " + total;
+        atual +
+        " / " +
+        total;
 
 
     const porcentagem =
         Math.round(
-            (atual / total) * 100
+            (atual / total) *
+            100
         );
 
 
     document.getElementById(
         "progresso"
     ).style.width =
-        porcentagem + "%";
+        porcentagem +
+        "%";
 }
 
 
@@ -699,11 +761,15 @@ function renderizarAlternativas(
         );
 
 
-    container.innerHTML = "";
+    container.innerHTML =
+        "";
 
 
     alternativas.forEach(
-        function (alternativa, indice) {
+        function (
+            alternativa,
+            indice
+        ) {
 
             const botao =
                 document.createElement(
@@ -711,7 +777,9 @@ function renderizarAlternativas(
                 );
 
 
-            botao.type = "button";
+            botao.type =
+                "button";
+
 
             botao.className =
                 "alternativa";
@@ -730,7 +798,10 @@ function renderizarAlternativas(
                             ".alternativa"
                         )
                         .forEach(
-                            function (item) {
+                            function (
+                                item
+                            ) {
+
                                 item.classList
                                     .remove(
                                         "selecionada"
@@ -762,12 +833,15 @@ function renderizarAlternativas(
 // PASSOS
 // ============================================================
 
-function renderizarPassos(passos) {
+function renderizarPassos(
+    passos
+) {
 
     const bloco =
         document.getElementById(
             "passos"
         );
+
 
     const lista =
         document.getElementById(
@@ -775,7 +849,9 @@ function renderizarPassos(passos) {
         );
 
 
-    lista.innerHTML = "";
+    lista.innerHTML =
+        "";
+
 
     bloco.classList.add(
         "oculto"
@@ -786,6 +862,7 @@ function renderizarPassos(passos) {
         !Array.isArray(passos) ||
         passos.length === 0
     ) {
+
         return;
     }
 
@@ -798,8 +875,10 @@ function renderizarPassos(passos) {
                     "li"
                 );
 
+
             li.textContent =
                 String(passo);
+
 
             lista.appendChild(
                 li
@@ -818,12 +897,15 @@ function renderizarPassos(passos) {
 // MAPA MENTAL
 // ============================================================
 
-function renderizarVisual(visual) {
+function renderizarVisual(
+    visual
+) {
 
     const bloco =
         document.getElementById(
             "visual"
         );
+
 
     const lista =
         document.getElementById(
@@ -831,7 +913,9 @@ function renderizarVisual(visual) {
         );
 
 
-    lista.innerHTML = "";
+    lista.innerHTML =
+        "";
+
 
     bloco.classList.add(
         "oculto"
@@ -861,11 +945,13 @@ function renderizarVisual(visual) {
                 "div"
             );
 
+
         mapa.className =
             "mapa-mental";
 
 
-        let html = "";
+        let html =
+            "";
 
 
         html +=
@@ -887,7 +973,7 @@ function renderizarVisual(visual) {
 
 
         html +=
-            '<div class="mapa-linha"></div>';
+            '<div class="mapa-linha"></div>";
 
 
         html +=
@@ -923,6 +1009,7 @@ function renderizarVisual(visual) {
                     html +=
                         "<ul>";
 
+
                     itens.forEach(
                         function (item) {
 
@@ -934,6 +1021,7 @@ function renderizarVisual(visual) {
                                 "</li>";
                         }
                     );
+
 
                     html +=
                         "</ul>";
@@ -977,6 +1065,7 @@ function renderizarVisual(visual) {
         document.createElement(
             "div"
         );
+
 
     texto.className =
         "visual-texto";
@@ -1026,9 +1115,10 @@ function registrarResposta() {
     const tempo =
         inicioQuestao
             ? Math.round(
-                (Date.now() -
-                    inicioQuestao) /
-                1000
+                (
+                    Date.now() -
+                    inicioQuestao
+                ) / 1000
             )
             : 0;
 
@@ -1080,12 +1170,16 @@ function registrarResposta() {
 
     document.getElementById(
         "registrarResposta"
-    ).classList.add("oculto");
+    ).classList.add(
+        "oculto"
+    );
 
 
     document.getElementById(
         "proxima"
-    ).classList.remove("oculto");
+    ).classList.remove(
+        "oculto"
+    );
 }
 
 
@@ -1105,7 +1199,9 @@ function mostrarFeedback(
 
 
     feedback.innerHTML =
-        escaparHTML(mensagem);
+        escaparHTML(
+            mensagem
+        );
 
 
     feedback.classList.remove(
@@ -1220,6 +1316,7 @@ async function prepararAdaptativas() {
                 resultado.questoes
             )
         ) {
+
             throw new Error(
                 "A IA não retornou as atividades adaptativas."
             );
@@ -1227,8 +1324,10 @@ async function prepararAdaptativas() {
 
 
         if (
-            resultado.questoes.length !== 6
+            resultado.questoes.length !==
+            6
         ) {
+
             throw new Error(
                 "A IA retornou " +
                 resultado.questoes.length +
@@ -1242,10 +1341,14 @@ async function prepararAdaptativas() {
                 function (q) {
 
                     const n =
-                        normalizarQuestao(q);
+                        normalizarQuestao(
+                            q
+                        );
+
 
                     n.estrategia =
                         "Repetição adaptativa";
+
 
                     return n;
                 }
@@ -1264,7 +1367,9 @@ async function prepararAdaptativas() {
             "As 6 atividades adaptativas foram preparadas.";
 
 
-        await esperar(700);
+        await esperar(
+            700
+        );
 
 
         questaoAtual =
@@ -1295,96 +1400,135 @@ async function prepararAdaptativas() {
 
 function calcularDesempenho() {
 
-    const resultado = {};
+    const resultado =
+        {};
 
 
     [
         "Divisão em etapas",
         "Apoio visual",
         "Instruções claras"
-    ].forEach(function (estrategia) {
+    ].forEach(
+        function (estrategia) {
 
-        const lista =
-            respostas.filter(
-                function (r) {
-                    return (
-                        r.estrategia ===
-                        estrategia
-                    );
-                }
-            );
+            const lista =
+                respostas.filter(
+                    function (r) {
+
+                        return (
+                            r.estrategia ===
+                            estrategia
+                        );
+                    }
+                );
 
 
-        if (!lista.length) {
+            if (!lista.length) {
+
+                resultado[estrategia] = {
+
+                    acertos:
+                        0,
+
+                    total:
+                        0,
+
+                    percentual:
+                        0,
+
+                    tempo_medio:
+                        0,
+
+                    dificuldade_media:
+                        0
+                };
+
+
+                return;
+            }
+
+
+            const acertos =
+                lista.filter(
+                    function (r) {
+                        return r.correta;
+                    }
+                ).length;
+
+
+            const tempo =
+                lista.reduce(
+                    function (
+                        soma,
+                        r
+                    ) {
+
+                        return (
+                            soma +
+                            Number(
+                                r.tempo ||
+                                0
+                            )
+                        );
+
+                    },
+                    0
+                ) /
+                lista.length;
+
+
+            const dificuldade =
+                lista.reduce(
+                    function (
+                        soma,
+                        r
+                    ) {
+
+                        return (
+                            soma +
+                            Number(
+                                r.dificuldade ||
+                                0
+                            )
+                        );
+
+                    },
+                    0
+                ) /
+                lista.length;
+
 
             resultado[estrategia] = {
-                acertos: 0,
-                total: 0,
-                percentual: 0,
-                tempo_medio: 0,
-                dificuldade_media: 0
+
+                acertos:
+                    acertos,
+
+                total:
+                    lista.length,
+
+                percentual:
+                    Math.round(
+                        (
+                            acertos /
+                            lista.length
+                        ) *
+                        100
+                    ),
+
+                tempo_medio:
+                    Math.round(
+                        tempo
+                    ),
+
+                dificuldade_media:
+                    Number(
+                        dificuldade.toFixed(
+                            2
+                        )
+                    )
             };
-
-            return;
         }
-
-
-        const acertos =
-            lista.filter(
-                function (r) {
-                    return r.correta;
-                }
-            ).length;
-
-
-        const tempo =
-            lista.reduce(
-                function (soma, r) {
-                    return soma +
-                        Number(r.tempo || 0);
-                },
-                0
-            ) / lista.length;
-
-
-        const dificuldade =
-            lista.reduce(
-                function (soma, r) {
-                    return soma +
-                        Number(
-                            r.dificuldade || 0
-                        );
-                },
-                0
-            ) / lista.length;
-
-
-        resultado[estrategia] = {
-
-            acertos:
-                acertos,
-
-            total:
-                lista.length,
-
-            percentual:
-                Math.round(
-                    (acertos /
-                        lista.length) *
-                    100
-                ),
-
-            tempo_medio:
-                Math.round(
-                    tempo
-                ),
-
-            dificuldade_media:
-                Number(
-                    dificuldade.toFixed(2)
-                )
-        };
-    });
+    );
 
 
     return resultado;
@@ -1402,6 +1546,7 @@ function escolherEstrategia(
     let melhor =
         "Divisão em etapas";
 
+
     let maior =
         -1;
 
@@ -1410,24 +1555,30 @@ function escolherEstrategia(
         "Divisão em etapas",
         "Apoio visual",
         "Instruções claras"
-    ].forEach(function (estrategia) {
+    ].forEach(
+        function (estrategia) {
 
-        const dados =
-            desempenho[estrategia];
+            const dados =
+                desempenho[
+                    estrategia
+                ];
 
 
-        if (
-            dados &&
-            dados.percentual > maior
-        ) {
+            if (
+                dados &&
+                dados.percentual >
+                maior
+            ) {
 
-            maior =
-                dados.percentual;
+                maior =
+                    dados.percentual;
 
-            melhor =
-                estrategia;
+
+                melhor =
+                    estrategia;
+            }
         }
-    });
+    );
 
 
     return melhor;
@@ -1440,12 +1591,16 @@ function escolherEstrategia(
 
 function finalizarAvaliacao() {
 
-    if (avaliacaoFinalizada) {
+    if (
+        avaliacaoFinalizada
+    ) {
+
         return;
     }
 
 
-    avaliacaoFinalizada = true;
+    avaliacaoFinalizada =
+        true;
 
 
     const desempenho =
@@ -1479,7 +1634,10 @@ function preencherResultados(
 
 
     estrategias.forEach(
-        function (nome, indice) {
+        function (
+            nome,
+            indice
+        ) {
 
             const dados =
                 desempenho[nome];
@@ -1488,7 +1646,10 @@ function preencherResultados(
             const elemento =
                 document.getElementById(
                     "resultado" +
-                    (indice + 1)
+                    (
+                        indice +
+                        1
+                    )
                 );
 
 
@@ -1499,7 +1660,9 @@ function preencherResultados(
 
             elemento.innerHTML =
                 "<strong>" +
-                escaparHTML(nome) +
+                escaparHTML(
+                    nome
+                ) +
                 "</strong>" +
                 "<span>" +
                 dados.percentual +
@@ -1524,7 +1687,9 @@ function preencherResultados(
         0;
 
 
-    if (adaptativas.length) {
+    if (
+        adaptativas.length
+    ) {
 
         const acertos =
             adaptativas.filter(
@@ -1536,8 +1701,10 @@ function preencherResultados(
 
         percentualAdaptativo =
             Math.round(
-                (acertos /
-                    adaptativas.length) *
+                (
+                    acertos /
+                    adaptativas.length
+                ) *
                 100
             );
     }
@@ -1591,11 +1758,15 @@ function mostrarAtividades() {
         );
 
 
-    lista.innerHTML = "";
+    lista.innerHTML =
+        "";
 
 
     questoesAdaptativas.forEach(
-        function (q, indice) {
+        function (
+            q,
+            indice
+        ) {
 
             const atividade =
                 document.createElement(
@@ -1609,7 +1780,10 @@ function mostrarAtividades() {
 
             let html =
                 "<h3>Atividade " +
-                (indice + 1) +
+                (
+                    indice +
+                    1
+                ) +
                 "</h3>";
 
 
@@ -1626,12 +1800,16 @@ function mostrarAtividades() {
 
 
             q.alternativas.forEach(
-                function (alt, i) {
+                function (
+                    alt,
+                    i
+                ) {
 
                     html +=
                         "<div>" +
                         String.fromCharCode(
-                            65 + i
+                            65 +
+                            i
                         ) +
                         ") " +
                         escaparHTML(
@@ -1708,9 +1886,13 @@ function reiniciar() {
 
 
     if (btn) {
+
         btn.classList.add(
             "oculto"
         );
+
+        btn.style.display =
+            "none";
     }
 
 
@@ -1724,9 +1906,12 @@ function reiniciar() {
 // REQUISIÇÃO
 // ============================================================
 
-async function fazerRequisicao(payload) {
+async function fazerRequisicao(
+    payload
+) {
 
     let resposta;
+
 
     try {
 
@@ -1734,7 +1919,8 @@ async function fazerRequisicao(payload) {
             await fetch(
                 API_URL,
                 {
-                    method: "POST",
+                    method:
+                        "POST",
 
                     headers: {
                         "Content-Type":
@@ -1742,7 +1928,9 @@ async function fazerRequisicao(payload) {
                     },
 
                     body:
-                        JSON.stringify(payload),
+                        JSON.stringify(
+                            payload
+                        ),
 
                     redirect:
                         "follow"
@@ -1791,7 +1979,9 @@ async function fazerRequisicao(payload) {
     try {
 
         dados =
-            JSON.parse(texto);
+            JSON.parse(
+                texto
+            );
 
     } catch (erro) {
 
@@ -1804,7 +1994,10 @@ async function fazerRequisicao(payload) {
         throw new Error(
             "O Apps Script não retornou JSON. " +
             "Resposta recebida: " +
-            texto.substring(0, 500)
+            texto.substring(
+                0,
+                500
+            )
         );
     }
 
@@ -1823,7 +2016,8 @@ async function fazerRequisicao(payload) {
 
     if (
         !dados ||
-        typeof dados !== "object"
+        typeof dados !==
+        "object"
     ) {
 
         throw new Error(
@@ -1881,7 +2075,10 @@ function esperar(
 ) {
 
     return new Promise(
-        function (resolve) {
+        function (
+            resolve
+        ) {
+
             setTimeout(
                 resolve,
                 ms
@@ -1889,3 +2086,9 @@ function esperar(
         }
     );
 }
+```
+
+A única correção relacionada ao pedido foi fazer o botão `btnIniciarExercicios` aparecer explicitamente após as 18 questões serem recebidas e também garantir que ele esteja habilitado.
+
+**Importante:** o `Code.gs` não precisa ser alterado novamente.
+
