@@ -62,6 +62,7 @@
                 </p>
 
                 <label>Nome do estudante</label>
+
                 <input
                     type="text"
                     id="nome"
@@ -71,6 +72,7 @@
                 <div class="linha">
 
                     <div>
+
                         <label>Idade</label>
 
                         <input
@@ -78,9 +80,12 @@
                             id="idade"
                             placeholder="Idade"
                         >
+
                     </div>
 
+
                     <div>
+
                         <label>Ano escolar</label>
 
                         <input
@@ -88,9 +93,11 @@
                             id="ano"
                             placeholder="Ex.: 7º ano"
                         >
+
                     </div>
 
                 </div>
+
 
                 <label>Matéria</label>
 
@@ -100,6 +107,7 @@
                     placeholder="Ex.: Matemática"
                 >
 
+
                 <label>Conteúdo</label>
 
                 <input
@@ -108,12 +116,14 @@
                     placeholder="Ex.: Frações"
                 >
 
+
                 <label>Observações</label>
 
                 <textarea
                     id="observacoes"
                     placeholder="Informações adicionais"
                 ></textarea>
+
 
                 <button onclick="iniciarAvaliacao()">
                     Iniciar avaliação
@@ -142,17 +152,22 @@
 
                 </div>
 
+
                 <div class="barra">
+
                     <div id="progresso"></div>
+
                 </div>
+
 
                 <h2 id="pergunta">
                     A pergunta aparecerá aqui.
                 </h2>
 
-                <div id="alternativas">
 
+                <div id="alternativas">
                 </div>
+
 
                 <div class="dificuldade">
 
@@ -169,11 +184,14 @@
                     >
 
                     <div class="escala">
+
                         <span>Fácil</span>
                         <span>Difícil</span>
+
                     </div>
 
                 </div>
+
 
                 <button
                     id="proxima"
@@ -199,29 +217,46 @@
                     Analisando os resultados...
                 </p>
 
+
                 <div class="resultados">
 
                     <div class="resultado-item">
+
                         <span>Divisão em etapas</span>
+
                         <strong id="resultado1">--</strong>
+
                     </div>
 
+
                     <div class="resultado-item">
+
                         <span>Apoio visual</span>
+
                         <strong id="resultado2">--</strong>
+
                     </div>
 
+
                     <div class="resultado-item">
+
                         <span>Instruções claras</span>
+
                         <strong id="resultado3">--</strong>
+
                     </div>
 
+
                     <div class="resultado-item">
+
                         <span>Repetição adaptativa</span>
+
                         <strong id="resultado4">--</strong>
+
                     </div>
 
                 </div>
+
 
                 <button onclick="gerarAtividades()">
                     Gerar atividades adaptadas
