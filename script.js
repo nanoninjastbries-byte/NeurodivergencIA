@@ -1,8 +1,3 @@
-```javascript
-// ============================================================
-// NEURODIVERGÊNCIA — SCRIPT.JS
-// ============================================================
-
 const API_URL =
     "https://script.google.com/macros/s/AKfycbwh_ihAxxU-eM7YSmDzX-rDP4XabCABM6OON0KKs3Gwx0vvSOCQRxTxUOj2ZAIRbppf/exec";
 
@@ -25,11 +20,12 @@ let estrategiaEscolhida = "";
 let avaliacaoFinalizada = false;
 
 document.addEventListener("DOMContentLoaded", function () {
+
     const btnComecar = document.getElementById("btnComecar");
     const form = document.getElementById("formAvaliacao");
     const btnIniciar = document.getElementById("btnIniciarExercicios");
-    const btnProxima = document.getElementById("proxima");
     const btnRegistrar = document.getElementById("registrarResposta");
+    const btnProxima = document.getElementById("proxima");
     const btnAtividades = document.getElementById("btnAtividades");
     const btnReiniciar = document.getElementById("btnReiniciar");
     const btnNova = document.getElementById("btnNovaAvaliacao");
@@ -70,6 +66,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function mostrarTela(id) {
+
     document.querySelectorAll(".tela").forEach(function (tela) {
         tela.classList.remove("ativa");
     });
@@ -87,23 +84,44 @@ function mostrarTela(id) {
 }
 
 async function iniciarAvaliacao(event) {
-    if (event) event.preventDefault();
 
-    const nome = document.getElementById("nome").value.trim();
-    const idade = document.getElementById("idade").value.trim();
-    const ano = document.getElementById("ano").value.trim();
-    const materia = document.getElementById("materia").value.trim();
-    const conteudo = document.getElementById("conteudo").value.trim();
-    const observacoes = document.getElementById("observacoes").value.trim();
+    if (event) {
+        event.preventDefault();
+    }
 
-    const erro = document.getElementById("erroConfiguracao");
+    const nome =
+        document.getElementById("nome").value.trim();
+
+    const idade =
+        document.getElementById("idade").value.trim();
+
+    const ano =
+        document.getElementById("ano").value.trim();
+
+    const materia =
+        document.getElementById("materia").value.trim();
+
+    const conteudo =
+        document.getElementById("conteudo").value.trim();
+
+    const observacoes =
+        document.getElementById("observacoes").value.trim();
+
+    const erro =
+        document.getElementById("erroConfiguracao");
 
     erro.textContent = "";
     erro.classList.add("oculto");
+    erro.hidden = true;
 
     if (!nome || !idade || !ano || !materia || !conteudo) {
-        erro.textContent = "Preencha todos os campos obrigatórios.";
+
+        erro.textContent =
+            "Preencha todos os campos obrigatórios.";
+
         erro.classList.remove("oculto");
+        erro.hidden = false;
+
         return;
     }
 
@@ -128,12 +146,13 @@ async function iniciarAvaliacao(event) {
 
     mostrarTela("preparacao");
 
-    document.getElementById("statusPreparacao").textContent =
-        "A IA está preparando atividades sobre " +
-        materia +
+    document.getElementById("statusPreparacao").innerHTML =
+        "<strong>Criando atividades</strong>" +
+        "<p>A IA está preparando questões sobre " +
+        escaparHTML(materia) +
         " — " +
-        conteudo +
-        "...";
+        escaparHTML(conteudo) +
+        ".</p>";
 
     const btn =
         document.getElementById("btnIniciarExercicios");
@@ -145,8 +164,11 @@ async function iniciarAvaliacao(event) {
     }
 
     try {
+
         await gerarQuestoesIniciais();
+
     } catch (erroGeracao) {
+
         document.getElementById("statusPreparacao").textContent =
             "Erro ao preparar as atividades: " +
             erroGeracao.message;
@@ -156,9 +178,13 @@ async function iniciarAvaliacao(event) {
 async function gerarQuestoesIniciais() {
 
     const payload = {
+
         action: "gerar_questoes",
+
         aluno: dadosAluno,
+
         quantidade_total: 18,
+
         estrategias: [
             {
                 nome: "Divisão em etapas",
@@ -178,11 +204,17 @@ async function gerarQuestoesIniciais() {
     const resultado =
         await fazerRequisicao(payload);
 
-    if (!resultado.questoes || !Array.isArray(resultado.questoes)) {
-        throw new Error("A IA não retornou as questões.");
+    if (
+        !resultado.questoes ||
+        !Array.isArray(resultado.questoes)
+    ) {
+        throw new Error(
+            "A IA não retornou as questões."
+        );
     }
 
     if (resultado.questoes.length !== 18) {
+
         throw new Error(
             "Foram recebidas " +
             resultado.questoes.length +
@@ -198,27 +230,26 @@ async function gerarQuestoesIniciais() {
     questoes =
         questoesIniciais.slice();
 
-    document.getElementById("statusPreparacao").textContent =
-        "As 18 questões iniciais foram preparadas.";
+    document.getElementById("statusPreparacao").innerHTML =
+        "<strong>As 18 questões iniciais foram preparadas.</strong>" +
+        "<p>Quando estiver pronto, inicie a avaliação.</p>";
 
     atualizarContador();
 
-
-    // ========================================================
-    // ÚNICA CORREÇÃO:
-    // LIBERAR O BOTÃO DE COMEÇAR EXERCÍCIOS
-    // ========================================================
-
     const btn =
-        document.getElementById(
-            "btnIniciarExercicios"
-        );
+        document.getElementById("btnIniciarExercicios");
 
     if (btn) {
+
         btn.classList.remove("oculto");
+
         btn.hidden = false;
+
         btn.removeAttribute("hidden");
+
         btn.disabled = false;
+
+        btn.style.display = "block";
         btn.style.visibility = "visible";
         btn.style.opacity = "1";
         btn.style.pointerEvents = "auto";
@@ -226,28 +257,37 @@ async function gerarQuestoesIniciais() {
 }
 
 function organizarQuestoesIniciais(lista) {
+
     const grupos = {};
 
-    ESTRATEGIAS.slice(0, 3).forEach(function (nome) {
+    [
+        "Divisão em etapas",
+        "Apoio visual",
+        "Instruções claras"
+    ].forEach(function (nome) {
         grupos[nome] = [];
     });
 
     lista.forEach(function (questao) {
-        const normalizada = normalizarQuestao(questao);
-        let estrategia = normalizada.estrategia;
+
+        const normalizada =
+            normalizarQuestao(questao);
+
+        let estrategia =
+            normalizada.estrategia;
 
         if (!grupos[estrategia]) {
-            if (normalizada.estrategia === "Apoio visual") {
-                estrategia = "Apoio visual";
-            } else if (normalizada.estrategia === "Instruções claras") {
-                estrategia = "Instruções claras";
-            } else {
-                estrategia = "Divisão em etapas";
-            }
+
+            estrategia =
+                "Divisão em etapas";
         }
 
-        normalizada.estrategia = estrategia;
-        grupos[estrategia].push(normalizada);
+        normalizada.estrategia =
+            estrategia;
+
+        grupos[estrategia].push(
+            normalizada
+        );
     });
 
     const resultado = [];
@@ -258,9 +298,11 @@ function organizarQuestoesIniciais(lista) {
         "Instruções claras"
     ].forEach(function (nome) {
 
-        const grupo = grupos[nome] || [];
+        const grupo =
+            grupos[nome] || [];
 
         if (grupo.length !== 6) {
+
             throw new Error(
                 "A estratégia " +
                 nome +
@@ -270,37 +312,49 @@ function organizarQuestoesIniciais(lista) {
             );
         }
 
-        resultado.push.apply(resultado, grupo);
+        resultado.push.apply(
+            resultado,
+            grupo
+        );
     });
 
     return resultado;
 }
 
 function iniciarExercicios() {
-    if (!questoes.length) return;
+
+    if (!questoes.length) {
+        return;
+    }
 
     questaoAtual = 0;
     respostas = [];
     avaliacaoFinalizada = false;
 
     mostrarTela("avaliacao");
+
     mostrarQuestao();
 }
 
 function normalizarQuestao(q) {
 
-    const alternativas = Array.isArray(q.alternativas)
-        ? q.alternativas
-        : [
-            q.alternativa_a,
-            q.alternativa_b,
-            q.alternativa_c,
-            q.alternativa_d
-        ];
+    const alternativas =
+        Array.isArray(q.alternativas)
+            ? q.alternativas
+            : [
+                q.alternativa_a,
+                q.alternativa_b,
+                q.alternativa_c,
+                q.alternativa_d
+            ];
 
-    let correta = q.resposta_correta;
+    let correta =
+        q.resposta_correta;
 
-    if (correta === undefined || correta === null) {
+    if (
+        correta === undefined ||
+        correta === null
+    ) {
         correta = q.correta;
     }
 
@@ -317,250 +371,265 @@ function normalizarQuestao(q) {
             correta.trim().toUpperCase();
 
         if (letras[letra] !== undefined) {
-            correta = letras[letra];
+
+            correta =
+                letras[letra];
+
         } else if (!isNaN(Number(correta))) {
-            correta = Number(correta);
+
+            correta =
+                Number(correta);
         }
     }
 
-    let visual = q.visual || "";
-
-    if (typeof visual === "object" && visual !== null) {
-        visual = {
-            tipo: visual.tipo || "",
-            titulo: visual.titulo || "",
-            centro: visual.centro || "",
-            ramos: Array.isArray(visual.ramos)
-                ? visual.ramos
-                : []
-        };
-    }
-
     return {
-        pergunta: q.pergunta || q.enunciado || "",
-        alternativas: alternativas.slice(0, 4).map(function (a) {
-            return String(a || "");
-        }),
-        correta: Number(correta),
-        explicacao: q.explicacao || "",
-        estrategia: q.estrategia || "",
-        passos: Array.isArray(q.passos) ? q.passos : [],
-        visual: visual
+
+        pergunta:
+            q.pergunta ||
+            q.enunciado ||
+            "",
+
+        alternativas:
+            alternativas
+                .slice(0, 4)
+                .map(function (a) {
+                    return String(a || "");
+                }),
+
+        correta:
+            Number(correta),
+
+        explicacao:
+            q.explicacao || "",
+
+        estrategia:
+            q.estrategia || "",
+
+        passos:
+            Array.isArray(q.passos)
+                ? q.passos
+                : [],
+
+        visual:
+            typeof q.visual === "string"
+                ? q.visual
+                : ""
     };
 }
 
 function mostrarQuestao() {
 
-    const q = questoes[questaoAtual];
+    const q =
+        questoes[questaoAtual];
 
-    if (!q) return;
+    if (!q) {
+        return;
+    }
 
     alternativaSelecionada = null;
 
-    document.getElementById("feedback").innerHTML = "";
-    document.getElementById("feedback").classList.add("oculto");
+    const feedback =
+        document.getElementById("feedback");
 
-    document.getElementById("registrarResposta")
-        .classList.remove("oculto");
+    feedback.innerHTML = "";
+    feedback.classList.add("oculto");
+    feedback.hidden = true;
 
-    document.getElementById("proxima")
-        .classList.add("oculto");
+    const registrar =
+        document.getElementById(
+            "registrarResposta"
+        );
 
-    document.getElementById("dificuldade").value = 3;
+    registrar.classList.remove("oculto");
+    registrar.disabled = false;
 
-    document.getElementById("pergunta").innerHTML =
-        escaparHTML(q.pergunta);
+    const proxima =
+        document.getElementById("proxima");
 
-    document.getElementById("estrategia").textContent =
-        q.estrategia || "Atividade adaptada";
+    proxima.classList.add("oculto");
+
+    document.getElementById(
+        "dificuldade"
+    ).value = 2;
+
+    document.getElementById(
+        "pergunta"
+    ).textContent = q.pergunta;
+
+    document.getElementById(
+        "estrategia"
+    ).textContent =
+        q.estrategia ||
+        "Atividade adaptada";
 
     atualizarContador();
 
     renderizarPassos(q.passos);
-    renderizarVisual(q.visual);
-    renderizarAlternativas(q.alternativas);
 
-    inicioQuestao = Date.now();
+    renderizarVisual(q.visual);
+
+    renderizarAlternativas(
+        q.alternativas
+    );
+
+    inicioQuestao =
+        Date.now();
 }
 
 function atualizarContador() {
 
-    const total = questoes.length;
-    const atual = questaoAtual + 1;
+    const total =
+        questoes.length;
 
-    document.getElementById("contador").textContent =
+    const atual =
+        questaoAtual + 1;
+
+    document.getElementById(
+        "contador"
+    ).textContent =
         atual + " / " + total;
 
     const porcentagem =
-        Math.round((atual / total) * 100);
+        Math.round(
+            (atual / total) * 100
+        );
 
-    document.getElementById("progresso").style.width =
+    document.getElementById(
+        "progresso"
+    ).style.width =
         porcentagem + "%";
 }
 
-function renderizarAlternativas(alternativas) {
+function renderizarAlternativas(
+    alternativas
+) {
 
     const container =
-        document.getElementById("alternativas");
+        document.getElementById(
+            "alternativas"
+        );
 
     container.innerHTML = "";
 
-    alternativas.forEach(function (alternativa, indice) {
+    alternativas.forEach(
+        function (alternativa, indice) {
 
-        const botao =
-            document.createElement("button");
+            const botao =
+                document.createElement(
+                    "button"
+                );
 
-        botao.type = "button";
-        botao.className = "alternativa";
-        botao.textContent = alternativa;
+            botao.type = "button";
+            botao.className =
+                "alternativa";
 
-        botao.addEventListener("click", function () {
+            botao.textContent =
+                alternativa;
 
-            document.querySelectorAll(".alternativa")
-                .forEach(function (item) {
-                    item.classList.remove("selecionada");
-                });
+            botao.addEventListener(
+                "click",
+                function () {
 
-            botao.classList.add("selecionada");
+                    document
+                        .querySelectorAll(
+                            ".alternativa"
+                        )
+                        .forEach(
+                            function (item) {
+                                item.classList
+                                    .remove(
+                                        "selecionada"
+                                    );
+                            }
+                        );
 
-            alternativaSelecionada = indice;
-        });
+                    botao.classList.add(
+                        "selecionada"
+                    );
 
-        container.appendChild(botao);
-    });
+                    alternativaSelecionada =
+                        indice;
+                }
+            );
+
+            container.appendChild(
+                botao
+            );
+        }
+    );
 }
 
 function renderizarPassos(passos) {
 
     const bloco =
-        document.getElementById("passos");
+        document.getElementById(
+            "passos"
+        );
 
     const lista =
-        document.getElementById("listaPassos");
+        document.getElementById(
+            "listaPassos"
+        );
 
     lista.innerHTML = "";
 
     bloco.classList.add("oculto");
+    bloco.hidden = true;
 
-    if (!Array.isArray(passos) || passos.length === 0) {
+    if (
+        !Array.isArray(passos) ||
+        passos.length === 0
+    ) {
         return;
     }
 
-    passos.forEach(function (passo) {
+    passos.forEach(
+        function (passo) {
 
-        const li =
-            document.createElement("li");
+            const li =
+                document.createElement(
+                    "li"
+                );
 
-        li.textContent = String(passo);
+            li.textContent =
+                String(passo);
 
-        lista.appendChild(li);
-    });
+            lista.appendChild(li);
+        }
+    );
 
     bloco.classList.remove("oculto");
+    bloco.hidden = false;
 }
 
 function renderizarVisual(visual) {
 
     const bloco =
-        document.getElementById("visual");
+        document.getElementById(
+            "visual"
+        );
 
     const lista =
-        document.getElementById("listaVisual");
+        document.getElementById(
+            "listaVisual"
+        );
 
     lista.innerHTML = "";
 
     bloco.classList.add("oculto");
+    bloco.hidden = true;
 
-    if (!visual) return;
-
-    if (
-        typeof visual === "object" &&
-        visual.tipo === "mapa_mental"
-    ) {
-
-        const ramos =
-            Array.isArray(visual.ramos)
-                ? visual.ramos
-                : [];
-
-        const mapa =
-            document.createElement("div");
-
-        mapa.className =
-            "mapa-mental";
-
-        let html = "";
-
-        html +=
-            '<div class="mapa-titulo">' +
-            escaparHTML(
-                visual.titulo || "Mapa mental"
-            ) +
-            "</div>";
-
-        html +=
-            '<div class="mapa-centro">' +
-            escaparHTML(
-                visual.centro || ""
-            ) +
-            "</div>";
-
-        html +=
-            '<div class="mapa-linha"></div>';
-
-        html +=
-            '<div class="mapa-ramos">';
-
-        ramos.forEach(function (ramo) {
-
-            html +=
-                '<div class="mapa-ramo">';
-
-            html +=
-                '<div class="mapa-ramo-titulo">' +
-                escaparHTML(
-                    ramo.titulo || ""
-                ) +
-                "</div>";
-
-            const itens =
-                Array.isArray(ramo.itens)
-                    ? ramo.itens
-                    : [];
-
-            if (itens.length) {
-
-                html += "<ul>";
-
-                itens.forEach(function (item) {
-
-                    html +=
-                        "<li>" +
-                        escaparHTML(item) +
-                        "</li>";
-                });
-
-                html += "</ul>";
-            }
-
-            html += "</div>";
-        });
-
-        html += "</div>";
-
-        mapa.innerHTML = html;
-
-        lista.appendChild(mapa);
-
-        bloco.classList.remove("oculto");
-
+    if (!visual) {
         return;
     }
 
     bloco.classList.remove("oculto");
+    bloco.hidden = false;
 
     const texto =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
 
     texto.className =
         "visual-texto";
@@ -573,7 +642,9 @@ function renderizarVisual(visual) {
 
 function registrarResposta() {
 
-    if (alternativaSelecionada === null) {
+    if (
+        alternativaSelecionada === null
+    ) {
 
         mostrarFeedback(
             "Selecione uma alternativa antes de continuar.",
@@ -596,55 +667,77 @@ function registrarResposta() {
     const tempo =
         inicioQuestao
             ? Math.round(
-                (Date.now() - inicioQuestao) / 1000
+                (Date.now() -
+                    inicioQuestao) /
+                1000
             )
             : 0;
 
     const correta =
-        alternativaSelecionada === Number(q.correta);
+        alternativaSelecionada ===
+        Number(q.correta);
 
     respostas.push({
-        questao: questaoAtual + 1,
-        estrategia: q.estrategia,
-        resposta: alternativaSelecionada,
-        correta: correta,
-        dificuldade: dificuldade,
-        tempo: tempo
+
+        questao:
+            questaoAtual + 1,
+
+        estrategia:
+            q.estrategia,
+
+        resposta:
+            alternativaSelecionada,
+
+        correta:
+            correta,
+
+        dificuldade:
+            dificuldade,
+
+        tempo:
+            tempo
     });
 
-    if (correta) {
+    mostrarFeedback(
+        correta
+            ? "Resposta correta. " +
+              (q.explicacao || "")
+            : "Resposta registrada. " +
+              (q.explicacao || ""),
+        correta
+    );
 
-        mostrarFeedback(
-            "Resposta correta. " +
-            (q.explicacao || ""),
-            true
-        );
+    document
+        .getElementById(
+            "registrarResposta"
+        )
+        .classList.add("oculto");
 
-    } else {
+    document
+        .getElementById(
+            "registrarResposta"
+        )
+        .disabled = true;
 
-        mostrarFeedback(
-            "Resposta registrada. " +
-            (q.explicacao || ""),
-            false
-        );
-    }
-
-    document.getElementById(
-        "registrarResposta"
-    ).classList.add("oculto");
-
-    document.getElementById(
-        "proxima"
-    ).classList.remove("oculto");
+    document
+        .getElementById(
+            "proxima"
+        )
+        .classList.remove("oculto");
 }
 
-function mostrarFeedback(mensagem, correta) {
+function mostrarFeedback(
+    mensagem,
+    correta
+) {
 
     const feedback =
-        document.getElementById("feedback");
+        document.getElementById(
+            "feedback"
+        );
 
-    feedback.innerHTML =
-        escaparHTML(mensagem);
+    feedback.textContent =
+        mensagem;
 
     feedback.classList.remove(
         "oculto",
@@ -657,20 +750,27 @@ function mostrarFeedback(mensagem, correta) {
             ? "correta"
             : "incorreta"
     );
+
+    feedback.hidden = false;
 }
 
 async function proximaQuestao() {
 
     questaoAtual++;
 
-    if (questaoAtual < questoes.length) {
+    if (
+        questaoAtual <
+        questoes.length
+    ) {
 
         mostrarQuestao();
 
         return;
     }
 
-    if (questoesAdaptativas.length === 0) {
+    if (
+        questoesAdaptativas.length === 0
+    ) {
 
         await prepararAdaptativas();
 
@@ -695,30 +795,41 @@ async function prepararAdaptativas() {
             calcularDesempenho();
 
         estrategiaEscolhida =
-            escolherEstrategia(desempenho);
+            escolherEstrategia(
+                desempenho
+            );
 
         const payload = {
 
-            action: "gerar_adaptativas",
+            action:
+                "gerar_adaptativas",
 
-            aluno: dadosAluno,
+            aluno:
+                dadosAluno,
 
             estrategiaSelecionada:
                 estrategiaEscolhida,
 
-            desempenho: desempenho,
+            desempenho:
+                desempenho,
 
-            respostas: respostas,
+            respostas:
+                respostas,
 
-            quantidade: 6
+            quantidade:
+                6
         };
 
         const resultado =
-            await fazerRequisicao(payload);
+            await fazerRequisicao(
+                payload
+            );
 
         if (
             !resultado.questoes ||
-            !Array.isArray(resultado.questoes)
+            !Array.isArray(
+                resultado.questoes
+            )
         ) {
 
             throw new Error(
@@ -726,7 +837,9 @@ async function prepararAdaptativas() {
             );
         }
 
-        if (resultado.questoes.length !== 6) {
+        if (
+            resultado.questoes.length !== 6
+        ) {
 
             throw new Error(
                 "A IA retornou " +
@@ -736,16 +849,18 @@ async function prepararAdaptativas() {
         }
 
         questoesAdaptativas =
-            resultado.questoes.map(function (q) {
+            resultado.questoes.map(
+                function (q) {
 
-                const n =
-                    normalizarQuestao(q);
+                    const n =
+                        normalizarQuestao(q);
 
-                n.estrategia =
-                    "Repetição adaptativa";
+                    n.estrategia =
+                        "Repetição adaptativa";
 
-                return n;
-            });
+                    return n;
+                }
+            );
 
         questoes =
             questoesIniciais.concat(
@@ -786,13 +901,19 @@ function calcularDesempenho() {
     ].forEach(function (estrategia) {
 
         const lista =
-            respostas.filter(function (r) {
-                return r.estrategia === estrategia;
-            });
+            respostas.filter(
+                function (r) {
+                    return (
+                        r.estrategia ===
+                        estrategia
+                    );
+                }
+            );
 
         if (!lista.length) {
 
             resultado[estrategia] = {
+
                 acertos: 0,
                 total: 0,
                 percentual: 0,
@@ -804,35 +925,47 @@ function calcularDesempenho() {
         }
 
         const acertos =
-            lista.filter(function (r) {
-                return r.correta;
-            }).length;
+            lista.filter(
+                function (r) {
+                    return r.correta;
+                }
+            ).length;
 
         const tempo =
-            lista.reduce(function (soma, r) {
-
-                return soma +
-                    Number(r.tempo || 0);
-
-            }, 0) / lista.length;
+            lista.reduce(
+                function (soma, r) {
+                    return soma +
+                        Number(
+                            r.tempo || 0
+                        );
+                },
+                0
+            ) / lista.length;
 
         const dificuldade =
-            lista.reduce(function (soma, r) {
-
-                return soma +
-                    Number(r.dificuldade || 0);
-
-            }, 0) / lista.length;
+            lista.reduce(
+                function (soma, r) {
+                    return soma +
+                        Number(
+                            r.dificuldade || 0
+                        );
+                },
+                0
+            ) / lista.length;
 
         resultado[estrategia] = {
 
-            acertos: acertos,
+            acertos:
+                acertos,
 
-            total: lista.length,
+            total:
+                lista.length,
 
             percentual:
                 Math.round(
-                    (acertos / lista.length) * 100
+                    (acertos /
+                        lista.length) *
+                    100
                 ),
 
             tempo_medio:
@@ -848,7 +981,9 @@ function calcularDesempenho() {
     return resultado;
 }
 
-function escolherEstrategia(desempenho) {
+function escolherEstrategia(
+    desempenho
+) {
 
     let melhor =
         "Divisão em etapas";
@@ -882,7 +1017,9 @@ function escolherEstrategia(desempenho) {
 
 function finalizarAvaliacao() {
 
-    if (avaliacaoFinalizada) return;
+    if (avaliacaoFinalizada) {
+        return;
+    }
 
     avaliacaoFinalizada = true;
 
@@ -896,7 +1033,9 @@ function finalizarAvaliacao() {
     );
 }
 
-function preencherResultados(desempenho) {
+function preencherResultados(
+    desempenho
+) {
 
     const estrategias = [
         "Divisão em etapas",
@@ -904,46 +1043,58 @@ function preencherResultados(desempenho) {
         "Instruções claras"
     ];
 
-    estrategias.forEach(function (nome, indice) {
+    estrategias.forEach(
+        function (nome, indice) {
 
-        const dados =
-            desempenho[nome];
+            const dados =
+                desempenho[nome];
 
-        const elemento =
-            document.getElementById(
-                "resultado" + (indice + 1)
-            );
+            const elemento =
+                document.getElementById(
+                    "resultado" +
+                    (indice + 1)
+                );
 
-        if (!elemento) return;
+            if (!elemento) {
+                return;
+            }
 
-        elemento.innerHTML =
-            "<strong>" +
-            escaparHTML(nome) +
-            "</strong>" +
-            "<span>" +
-            dados.percentual +
-            "% de acertos</span>";
-    });
+            elemento.innerHTML =
+                "<strong>" +
+                escaparHTML(nome) +
+                "</strong>" +
+                "<span>" +
+                dados.percentual +
+                "% de acertos</span>";
+        }
+    );
 
     const adaptativas =
-        respostas.filter(function (r) {
-
-            return r.estrategia ===
-                "Repetição adaptativa";
-        });
+        respostas.filter(
+            function (r) {
+                return (
+                    r.estrategia ===
+                    "Repetição adaptativa"
+                );
+            }
+        );
 
     let percentualAdaptativo = 0;
 
     if (adaptativas.length) {
 
         const acertos =
-            adaptativas.filter(function (r) {
-                return r.correta;
-            }).length;
+            adaptativas.filter(
+                function (r) {
+                    return r.correta;
+                }
+            ).length;
 
         percentualAdaptativo =
             Math.round(
-                (acertos / adaptativas.length) * 100
+                (acertos /
+                    adaptativas.length) *
+                100
             );
     }
 
@@ -968,14 +1119,10 @@ function preencherResultados(desempenho) {
 
     if (mensagem) {
 
-        mensagem.innerHTML =
-            "A estratégia com maior percentual de acertos " +
-            "na etapa inicial foi <strong>" +
-            escaparHTML(
-                estrategiaEscolhida
-            ) +
-            "</strong>. " +
-            "A etapa adaptativa foi criada a partir desse desempenho.";
+        mensagem.textContent =
+            "A estratégia com maior percentual de acertos na etapa inicial foi " +
+            estrategiaEscolhida +
+            ". A etapa adaptativa foi criada a partir desse desempenho.";
     }
 }
 
@@ -988,48 +1135,72 @@ function mostrarAtividades() {
 
     lista.innerHTML = "";
 
-    questoesAdaptativas.forEach(function (q, indice) {
+    questoesAdaptativas.forEach(
+        function (q, indice) {
 
-        const atividade =
-            document.createElement("div");
+            const atividade =
+                document.createElement(
+                    "div"
+                );
 
-        atividade.className =
-            "atividade";
+            atividade.className =
+                "atividade";
 
-        let html =
-            "<h3>Atividade " +
-            (indice + 1) +
-            "</h3>";
+            const titulo =
+                document.createElement(
+                    "h3"
+                );
 
-        html +=
-            "<p>" +
-            escaparHTML(q.pergunta) +
-            "</p>";
+            titulo.textContent =
+                "Atividade " +
+                (indice + 1);
 
-        html +=
-            '<div class="atividade-alternativas">';
+            const pergunta =
+                document.createElement(
+                    "p"
+                );
 
-        q.alternativas.forEach(function (alt, i) {
+            pergunta.textContent =
+                q.pergunta;
 
-            html +=
-                "<div>" +
-                String.fromCharCode(65 + i) +
-                ") " +
-                escaparHTML(alt) +
-                "</div>";
-        });
+            atividade.appendChild(
+                titulo
+            );
 
-        html += "</div>";
+            atividade.appendChild(
+                pergunta
+            );
 
-        atividade.innerHTML =
-            html;
+            q.alternativas.forEach(
+                function (alt, i) {
 
-        lista.appendChild(
-            atividade
-        );
-    });
+                    const div =
+                        document.createElement(
+                            "div"
+                        );
 
-    mostrarTela("atividades");
+                    div.textContent =
+                        String.fromCharCode(
+                            65 + i
+                        ) +
+                        ") " +
+                        alt;
+
+                    atividade.appendChild(
+                        div
+                    );
+                }
+            );
+
+            lista.appendChild(
+                atividade
+            );
+        }
+    );
+
+    mostrarTela(
+        "atividades"
+    );
 }
 
 function reiniciar() {
@@ -1061,10 +1232,7 @@ function reiniciar() {
 
     if (btn) {
 
-        btn.classList.add(
-            "oculto"
-        );
-
+        btn.classList.add("oculto");
         btn.hidden = true;
         btn.disabled = true;
     }
@@ -1072,12 +1240,9 @@ function reiniciar() {
     mostrarTela("inicio");
 }
 
-
-// ============================================================
-// REQUISIÇÃO — MANTIDA IGUAL
-// ============================================================
-
-async function fazerRequisicao(payload) {
+async function fazerRequisicao(
+    payload
+) {
 
     let resposta;
 
@@ -1095,7 +1260,9 @@ async function fazerRequisicao(payload) {
                     },
 
                     body:
-                        JSON.stringify(payload),
+                        JSON.stringify(
+                            payload
+                        ),
 
                     redirect:
                         "follow"
@@ -1143,7 +1310,7 @@ async function fazerRequisicao(payload) {
     } catch (erro) {
 
         console.error(
-            "Resposta completa recebida:",
+            "Resposta completa:",
             texto
         );
 
@@ -1178,11 +1345,6 @@ async function fazerRequisicao(payload) {
     return dados;
 }
 
-
-// ============================================================
-// HTML SEGURO
-// ============================================================
-
 function escaparHTML(valor) {
 
     return String(
@@ -1190,17 +1352,27 @@ function escaparHTML(valor) {
             ? ""
             : valor
     )
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
 }
-
-
-// ============================================================
-// ESPERA
-// ============================================================
 
 function esperar(ms) {
 
@@ -1213,5 +1385,3 @@ function esperar(ms) {
         }
     );
 }
-```
-
