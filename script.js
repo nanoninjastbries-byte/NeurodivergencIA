@@ -1,69 +1,79 @@
-const API_URL =
-    "https://script.google.com/macros/s/AKfycbwh_ihAxxU-eM7YSmDzX-rDP4XabCABM6OON0KKs3Gwx0vvSOCQRxTxUOj2ZAIRbppf/exec";
 
-const ESTRATEGIAS = [
+"use strict";
+
+// ============================================================
+// NEURODIVERGÊNCIA — JAVASCRIPT DO SITE
+// 18 QUESTÕES INICIAIS
+// 6 QUESTÕES DE REPETIÇÃO ADAPTATIVA
+// 10 ATIVIDADES ADAPTADAS
+// TOTAL: 3 CHAMADAS À GEMINI POR AVALIAÇÃO
+// ============================================================
+
+const API_URL = "https://script.google.com/macros/s/AKfycbwh_ihAxxU-eM7YSmDzX-rDP4XabCABM6OON0KKs3Gwx0vvSOCQRxTxUOj2ZAIRbppf/exec";
+
+const ESTRATEGIAS_INICIAIS = [
     "Divisão em etapas",
     "Apoio visual",
-    "Instruções claras",
-    "Repetição adaptativa"
+    "Instruções claras"
 ];
 
+const ESTRATEGIA_ADAPTATIVA = "Repetição adaptativa";
+
 let dadosAluno = {};
+let questoesIniciais = [];
+let questoesAdaptativas = [];
+let atividadesAdaptadas = [];
 let questoes = [];
 let respostas = [];
+
 let questaoAtual = 0;
 let inicioQuestao = null;
 let alternativaSelecionada = null;
-let questoesIniciais = [];
-let questoesAdaptativas = [];
+
 let estrategiaEscolhida = "";
 let avaliacaoFinalizada = false;
+let carregandoAdaptativas = false;
+let carregandoAtividadesAdaptadas = false;
+
+// ============================================================
+// INICIALIZAÇÃO
+// ============================================================
 
 document.addEventListener("DOMContentLoaded", function () {
 
-    const btnComecar = document.getElementById("btnComecar");
-    const form = document.getElementById("formAvaliacao");
-    const btnIniciar = document.getElementById("btnIniciarExercicios");
-    const btnRegistrar = document.getElementById("registrarResposta");
-    const btnProxima = document.getElementById("proxima");
-    const btnAtividades = document.getElementById("btnAtividades");
-    const btnReiniciar = document.getElementById("btnReiniciar");
-    const btnNova = document.getElementById("btnNovaAvaliacao");
-
-    if (btnComecar) {
-        btnComecar.addEventListener("click", function () {
+    const eventos = [
+        ["btnComecar", "click", function () {
             mostrarTela("configuracao");
-        });
-    }
+        }],
 
-    if (form) {
-        form.addEventListener("submit", iniciarAvaliacao);
-    }
+        ["formAvaliacao", "submit", iniciarAvaliacao],
 
-    if (btnIniciar) {
-        btnIniciar.addEventListener("click", iniciarExercicios);
-    }
+        ["btnIniciarExercicios", "click", iniciarExercicios],
 
-    if (btnRegistrar) {
-        btnRegistrar.addEventListener("click", registrarResposta);
-    }
+        ["registrarResposta", "click", registrarResposta],
 
-    if (btnProxima) {
-        btnProxima.addEventListener("click", proximaQuestao);
-    }
+        ["proxima", "click", proximaQuestao],
 
-    if (btnAtividades) {
-        btnAtividades.addEventListener("click", mostrarAtividades);
-    }
+        ["btnAtividades", "click", mostrarAtividades],
 
-    if (btnReiniciar) {
-        btnReiniciar.addEventListener("click", reiniciar);
-    }
+        ["btnReiniciar", "click", reiniciar],
 
-    if (btnNova) {
-        btnNova.addEventListener("click", reiniciar);
-    }
+        ["btnNovaAvaliacao", "click", reiniciar]
+    ];
+
+    eventos.forEach(function (item) {
+        const elemento = document.getElementById(item[0]);
+
+        if (elemento) {
+            elemento.addEventListener(item[1], item[2]);
+        }
+    });
+
 });
+
+// ============================================================
+// NAVEGAÇÃO ENTRE TELAS
+// ============================================================
 
 function mostrarTela(id) {
 
@@ -83,44 +93,41 @@ function mostrarTela(id) {
     });
 }
 
+// ============================================================
+// INICIAR AVALIAÇÃO
+// ============================================================
+
 async function iniciarAvaliacao(event) {
 
     if (event) {
         event.preventDefault();
     }
 
-    const nome =
-        document.getElementById("nome").value.trim();
+    const nome = obterValor("nome");
+    const idade = obterValor("idade");
+    const ano = obterValor("ano");
+    const materia = obterValor("materia");
+    const conteudo = obterValor("conteudo");
+    const observacoes = obterValor("observacoes");
 
-    const idade =
-        document.getElementById("idade").value.trim();
-
-    const ano =
-        document.getElementById("ano").value.trim();
-
-    const materia =
-        document.getElementById("materia").value.trim();
-
-    const conteudo =
-        document.getElementById("conteudo").value.trim();
-
-    const observacoes =
-        document.getElementById("observacoes").value.trim();
-
-    const erro =
-        document.getElementById("erroConfiguracao");
-
-    erro.textContent = "";
-    erro.classList.add("oculto");
-    erro.hidden = true;
+    const erro = document.getElementById("erroConfiguracao");
 
     if (!nome || !idade || !ano || !materia || !conteudo) {
 
-        erro.textContent =
-            "Preencha todos os campos obrigatórios.";
+        exibirErro(
+            erro,
+            "Preencha todos os campos obrigatórios."
+        );
 
-        erro.classList.remove("oculto");
-        erro.hidden = false;
+        return;
+    }
+
+    if (!Number.isFinite(Number(idade)) || Number(idade) <= 0) {
+
+        exibirErro(
+            erro,
+            "Informe uma idade válida."
+        );
 
         return;
     }
@@ -134,33 +141,23 @@ async function iniciarAvaliacao(event) {
         observacoes: observacoes
     };
 
-    questoes = [];
-    respostas = [];
-    questaoAtual = 0;
-    inicioQuestao = null;
-    alternativaSelecionada = null;
-    questoesIniciais = [];
-    questoesAdaptativas = [];
-    estrategiaEscolhida = "";
-    avaliacaoFinalizada = false;
+    limparDadosAvaliacao();
 
     mostrarTela("preparacao");
 
-    document.getElementById("statusPreparacao").innerHTML =
-        "<strong>Criando atividades</strong>" +
-        "<p>A IA está preparando questões sobre " +
-        escaparHTML(materia) +
-        " — " +
-        escaparHTML(conteudo) +
-        ".</p>";
+    const status = document.getElementById("statusPreparacao");
 
-    const btn =
-        document.getElementById("btnIniciarExercicios");
+    if (status) {
+        status.textContent =
+            "A IA está preparando as 18 questões iniciais...";
+    }
 
-    if (btn) {
-        btn.classList.add("oculto");
-        btn.hidden = true;
-        btn.disabled = true;
+    const botao = document.getElementById("btnIniciarExercicios");
+
+    if (botao) {
+        botao.hidden = true;
+        botao.disabled = true;
+        botao.classList.add("oculto");
     }
 
     try {
@@ -169,15 +166,65 @@ async function iniciarAvaliacao(event) {
 
     } catch (erroGeracao) {
 
-        document.getElementById("statusPreparacao").textContent =
-            "Erro ao preparar as atividades: " +
-            erroGeracao.message;
+        if (status) {
+            status.textContent =
+                "Não foi possível preparar a avaliação: " +
+                erroGeracao.message;
+        }
+
+        console.error(erroGeracao);
     }
 }
 
+function obterValor(id) {
+
+    const elemento = document.getElementById(id);
+
+    return elemento
+        ? elemento.value.trim()
+        : "";
+}
+
+function exibirErro(elemento, mensagem) {
+
+    if (!elemento) {
+        alert(mensagem);
+        return;
+    }
+
+    elemento.textContent = mensagem;
+    elemento.classList.remove("oculto");
+    elemento.hidden = false;
+}
+
+function limparDadosAvaliacao() {
+
+    questoesIniciais = [];
+    questoesAdaptativas = [];
+    atividadesAdaptadas = [];
+
+    questoes = [];
+    respostas = [];
+
+    questaoAtual = 0;
+    inicioQuestao = null;
+    alternativaSelecionada = null;
+
+    estrategiaEscolhida = "";
+
+    avaliacaoFinalizada = false;
+    carregandoAdaptativas = false;
+    carregandoAtividadesAdaptadas = false;
+}
+
+// ============================================================
+// PRIMEIRA CHAMADA À GEMINI
+// GERAÇÃO DAS 18 QUESTÕES INICIAIS
+// ============================================================
+
 async function gerarQuestoesIniciais() {
 
-    const payload = {
+    const resultado = await fazerRequisicao({
 
         action: "gerar_questoes",
 
@@ -199,22 +246,14 @@ async function gerarQuestoesIniciais() {
                 quantidade: 6
             }
         ]
-    };
 
-    const resultado =
-        await fazerRequisicao(payload);
+    });
 
-    if (
-        !resultado.questoes ||
-        !Array.isArray(resultado.questoes)
-    ) {
-        throw new Error(
-            "A IA não retornou as questões."
-        );
+    if (!Array.isArray(resultado.questoes)) {
+        throw new Error("A IA não retornou uma lista válida de questões.");
     }
 
     if (resultado.questoes.length !== 18) {
-
         throw new Error(
             "Foram recebidas " +
             resultado.questoes.length +
@@ -222,139 +261,120 @@ async function gerarQuestoesIniciais() {
         );
     }
 
-    questoesIniciais =
-        organizarQuestoesIniciais(
-            resultado.questoes
-        );
+    questoesIniciais = organizarQuestoesIniciais(
+        resultado.questoes
+    );
 
-    questoes =
-        questoesIniciais.slice();
+    questoes = questoesIniciais.slice();
 
-    document.getElementById("statusPreparacao").innerHTML =
-        "<strong>As 18 questões iniciais foram preparadas.</strong>" +
-        "<p>Quando estiver pronto, inicie a avaliação.</p>";
+    const status = document.getElementById("statusPreparacao");
+
+    if (status) {
+        status.textContent =
+            "As 18 questões foram preparadas. Você já pode iniciar a avaliação.";
+    }
 
     atualizarContador();
 
-    const btn =
-        document.getElementById("btnIniciarExercicios");
+    const botao = document.getElementById("btnIniciarExercicios");
 
-    if (btn) {
-
-        btn.classList.remove("oculto");
-
-        btn.hidden = false;
-
-        btn.removeAttribute("hidden");
-
-        btn.disabled = false;
-
-        btn.style.display = "block";
-        btn.style.visibility = "visible";
-        btn.style.opacity = "1";
-        btn.style.pointerEvents = "auto";
+    if (botao) {
+        botao.hidden = false;
+        botao.disabled = false;
+        botao.classList.remove("oculto");
+        botao.style.display = "block";
     }
 }
+
+// ============================================================
+// ORGANIZAÇÃO DAS QUESTÕES INICIAIS
+// ============================================================
 
 function organizarQuestoesIniciais(lista) {
 
     const grupos = {};
 
-    [
-        "Divisão em etapas",
-        "Apoio visual",
-        "Instruções claras"
-    ].forEach(function (nome) {
+    ESTRATEGIAS_INICIAIS.forEach(function (nome) {
         grupos[nome] = [];
     });
 
     lista.forEach(function (questao) {
 
-        const normalizada =
-            normalizarQuestao(questao);
-
-        let estrategia =
-            normalizada.estrategia;
+        const normalizada = normalizarQuestao(questao);
+        const estrategia = normalizada.estrategia;
 
         if (!grupos[estrategia]) {
-
-            estrategia =
-                "Divisão em etapas";
+            throw new Error(
+                "A IA retornou uma estratégia inválida: " + estrategia
+            );
         }
 
-        normalizada.estrategia =
-            estrategia;
-
-        grupos[estrategia].push(
-            normalizada
-        );
+        grupos[estrategia].push(normalizada);
     });
 
     const resultado = [];
 
-    [
-        "Divisão em etapas",
-        "Apoio visual",
-        "Instruções claras"
-    ].forEach(function (nome) {
+    ESTRATEGIAS_INICIAIS.forEach(function (nome) {
 
-        const grupo =
-            grupos[nome] || [];
-
-        if (grupo.length !== 6) {
-
+        if (grupos[nome].length !== 6) {
             throw new Error(
-                "A estratégia " +
-                nome +
-                " recebeu " +
-                grupo.length +
-                " questões em vez de 6."
+                "A estratégia " + nome +
+                " recebeu " + grupos[nome].length +
+                " questões. Eram esperadas 6."
             );
         }
 
-        resultado.push.apply(
-            resultado,
-            grupo
-        );
+        resultado.push.apply(resultado, grupos[nome]);
     });
 
     return resultado;
 }
 
+// ============================================================
+// INICIAR QUESTÕES
+// ============================================================
+
 function iniciarExercicios() {
 
-    if (!questoes.length) {
+    if (questoesIniciais.length !== 18) {
+        alert("As 18 questões iniciais ainda não foram preparadas.");
         return;
     }
 
+    questoes = questoesIniciais.slice();
     questaoAtual = 0;
     respostas = [];
-    avaliacaoFinalizada = false;
 
     mostrarTela("avaliacao");
-
     mostrarQuestao();
 }
 
+// ============================================================
+// NORMALIZAÇÃO DAS QUESTÕES
+// ============================================================
+
 function normalizarQuestao(q) {
 
-    const alternativas =
-        Array.isArray(q.alternativas)
-            ? q.alternativas
-            : [
-                q.alternativa_a,
-                q.alternativa_b,
-                q.alternativa_c,
-                q.alternativa_d
-            ];
+    if (!q || typeof q !== "object") {
+        throw new Error("A IA retornou uma questão inválida.");
+    }
 
-    let correta =
-        q.resposta_correta;
+    const alternativas = Array.isArray(q.alternativas)
+        ? q.alternativas
+        : [
+            q.alternativa_a,
+            q.alternativa_b,
+            q.alternativa_c,
+            q.alternativa_d
+        ];
 
-    if (
-        correta === undefined ||
-        correta === null
-    ) {
+    if (alternativas.length !== 4) {
+        throw new Error("Uma questão não possui quatro alternativas.");
+    }
+
+    let correta = q.resposta_correta;
+
+    if (correta === undefined || correta === null) {
         correta = q.correta;
     }
 
@@ -367,60 +387,48 @@ function normalizarQuestao(q) {
             D: 3
         };
 
-        const letra =
-            correta.trim().toUpperCase();
+        const letra = correta.trim().toUpperCase();
 
-        if (letras[letra] !== undefined) {
-
-            correta =
-                letras[letra];
-
-        } else if (!isNaN(Number(correta))) {
-
-            correta =
-                Number(correta);
+        if (Object.prototype.hasOwnProperty.call(letras, letra)) {
+            correta = letras[letra];
+        } else {
+            correta = Number(correta);
         }
+    }
+
+    correta = Number(correta);
+
+    if (!Number.isInteger(correta) || correta < 0 || correta > 3) {
+        throw new Error("A resposta correta de uma questão é inválida.");
     }
 
     return {
 
-        pergunta:
-            q.pergunta ||
-            q.enunciado ||
-            "",
+        pergunta: String(q.pergunta || q.enunciado || ""),
 
-        alternativas:
-            alternativas
-                .slice(0, 4)
-                .map(function (a) {
-                    return String(a || "");
-                }),
+        alternativas: alternativas.map(function (alternativa) {
+            return String(alternativa || "");
+        }),
 
-        correta:
-            Number(correta),
+        correta: correta,
 
-        explicacao:
-            q.explicacao || "",
+        explicacao: String(q.explicacao || ""),
 
-        estrategia:
-            q.estrategia || "",
+        estrategia: String(q.estrategia || ""),
 
-        passos:
-            Array.isArray(q.passos)
-                ? q.passos
-                : [],
+        passos: Array.isArray(q.passos) ? q.passos : [],
 
-        visual:
-            typeof q.visual === "string"
-                ? q.visual
-                : ""
+        visual: String(q.visual || "")
     };
 }
 
+// ============================================================
+// EXIBIR QUESTÃO
+// ============================================================
+
 function mostrarQuestao() {
 
-    const q =
-        questoes[questaoAtual];
+    const q = questoes[questaoAtual];
 
     if (!q) {
         return;
@@ -428,191 +436,162 @@ function mostrarQuestao() {
 
     alternativaSelecionada = null;
 
-    const feedback =
-        document.getElementById("feedback");
+    const feedback = document.getElementById("feedback");
 
-    feedback.innerHTML = "";
-    feedback.classList.add("oculto");
-    feedback.hidden = true;
+    if (feedback) {
+        feedback.textContent = "";
+        feedback.classList.add("oculto");
+        feedback.hidden = true;
+    }
 
-    const registrar =
-        document.getElementById(
-            "registrarResposta"
-        );
+    const registrar = document.getElementById("registrarResposta");
 
-    registrar.classList.remove("oculto");
-    registrar.disabled = false;
+    if (registrar) {
+        registrar.classList.remove("oculto");
+        registrar.disabled = false;
+    }
 
-    const proxima =
-        document.getElementById("proxima");
+    const proxima = document.getElementById("proxima");
 
-    proxima.classList.add("oculto");
+    if (proxima) {
+        proxima.classList.add("oculto");
+    }
 
-    document.getElementById(
-        "dificuldade"
-    ).value = 2;
+    const dificuldade = document.getElementById("dificuldade");
 
-    document.getElementById(
-        "pergunta"
-    ).textContent = q.pergunta;
+    if (dificuldade) {
+        dificuldade.value = 2;
+    }
 
-    document.getElementById(
-        "estrategia"
-    ).textContent =
-        q.estrategia ||
-        "Atividade adaptada";
+    const pergunta = document.getElementById("pergunta");
+
+    if (pergunta) {
+        pergunta.textContent = q.pergunta;
+    }
+
+    const estrategia = document.getElementById("estrategia");
+
+    if (estrategia) {
+        estrategia.textContent = q.estrategia;
+    }
 
     atualizarContador();
 
     renderizarPassos(q.passos);
-
     renderizarVisual(q.visual);
+    renderizarAlternativas(q.alternativas);
 
-    renderizarAlternativas(
-        q.alternativas
-    );
-
-    inicioQuestao =
-        Date.now();
+    inicioQuestao = Date.now();
 }
+
+// ============================================================
+// CONTADOR E PROGRESSO
+// ============================================================
 
 function atualizarContador() {
 
-    const total =
-        questoes.length;
+    const contador = document.getElementById("contador");
+    const progresso = document.getElementById("progresso");
 
-    const atual =
-        questaoAtual + 1;
+    if (contador) {
+        contador.textContent =
+            (questaoAtual + 1) + " / " + questoes.length;
+    }
 
-    document.getElementById(
-        "contador"
-    ).textContent =
-        atual + " / " + total;
+    if (progresso && questoes.length > 0) {
 
-    const porcentagem =
-        Math.round(
-            (atual / total) * 100
+        const porcentagem = Math.round(
+            ((questaoAtual + 1) / questoes.length) * 100
         );
 
-    document.getElementById(
-        "progresso"
-    ).style.width =
-        porcentagem + "%";
+        progresso.style.width = porcentagem + "%";
+    }
 }
 
-function renderizarAlternativas(
-    alternativas
-) {
+// ============================================================
+// ALTERNATIVAS
+// ============================================================
 
-    const container =
-        document.getElementById(
-            "alternativas"
-        );
+function renderizarAlternativas(alternativas) {
+
+    const container = document.getElementById("alternativas");
+
+    if (!container) {
+        return;
+    }
 
     container.innerHTML = "";
 
-    alternativas.forEach(
-        function (alternativa, indice) {
+    alternativas.forEach(function (alternativa, indice) {
 
-            const botao =
-                document.createElement(
-                    "button"
-                );
+        const botao = document.createElement("button");
 
-            botao.type = "button";
-            botao.className =
-                "alternativa";
+        botao.type = "button";
+        botao.className = "alternativa";
+        botao.textContent = alternativa;
 
-            botao.textContent =
-                alternativa;
+        botao.addEventListener("click", function () {
 
-            botao.addEventListener(
-                "click",
-                function () {
+            container.querySelectorAll(".alternativa").forEach(function (item) {
+                item.classList.remove("selecionada");
+            });
 
-                    document
-                        .querySelectorAll(
-                            ".alternativa"
-                        )
-                        .forEach(
-                            function (item) {
-                                item.classList
-                                    .remove(
-                                        "selecionada"
-                                    );
-                            }
-                        );
+            botao.classList.add("selecionada");
 
-                    botao.classList.add(
-                        "selecionada"
-                    );
+            alternativaSelecionada = indice;
+        });
 
-                    alternativaSelecionada =
-                        indice;
-                }
-            );
-
-            container.appendChild(
-                botao
-            );
-        }
-    );
+        container.appendChild(botao);
+    });
 }
+
+// ============================================================
+// PASSOS DA DIVISÃO EM ETAPAS
+// ============================================================
 
 function renderizarPassos(passos) {
 
-    const bloco =
-        document.getElementById(
-            "passos"
-        );
+    const bloco = document.getElementById("passos");
+    const lista = document.getElementById("listaPassos");
 
-    const lista =
-        document.getElementById(
-            "listaPassos"
-        );
+    if (!bloco || !lista) {
+        return;
+    }
 
     lista.innerHTML = "";
 
     bloco.classList.add("oculto");
     bloco.hidden = true;
 
-    if (
-        !Array.isArray(passos) ||
-        passos.length === 0
-    ) {
+    if (!Array.isArray(passos) || passos.length === 0) {
         return;
     }
 
-    passos.forEach(
-        function (passo) {
+    passos.forEach(function (passo) {
 
-            const li =
-                document.createElement(
-                    "li"
-                );
+        const item = document.createElement("li");
 
-            li.textContent =
-                String(passo);
+        item.textContent = String(passo);
 
-            lista.appendChild(li);
-        }
-    );
+        lista.appendChild(item);
+    });
 
     bloco.classList.remove("oculto");
     bloco.hidden = false;
 }
 
+// ============================================================
+// APOIO VISUAL
+// ============================================================
+
 function renderizarVisual(visual) {
 
-    const bloco =
-        document.getElementById(
-            "visual"
-        );
+    const bloco = document.getElementById("visual");
+    const lista = document.getElementById("listaVisual");
 
-    const lista =
-        document.getElementById(
-            "listaVisual"
-        );
+    if (!bloco || !lista) {
+        return;
+    }
 
     lista.innerHTML = "";
 
@@ -623,28 +602,24 @@ function renderizarVisual(visual) {
         return;
     }
 
-    bloco.classList.remove("oculto");
-    bloco.hidden = false;
+    const texto = document.createElement("div");
 
-    const texto =
-        document.createElement(
-            "div"
-        );
-
-    texto.className =
-        "visual-texto";
-
-    texto.textContent =
-        String(visual);
+    texto.className = "visual-texto";
+    texto.textContent = visual;
 
     lista.appendChild(texto);
+
+    bloco.classList.remove("oculto");
+    bloco.hidden = false;
 }
+
+// ============================================================
+// REGISTRAR RESPOSTA
+// ============================================================
 
 function registrarResposta() {
 
-    if (
-        alternativaSelecionada === null
-    ) {
+    if (alternativaSelecionada === null) {
 
         mostrarFeedback(
             "Selecione uma alternativa antes de continuar.",
@@ -654,90 +629,68 @@ function registrarResposta() {
         return;
     }
 
-    const q =
-        questoes[questaoAtual];
+    const q = questoes[questaoAtual];
 
-    const dificuldade =
-        Number(
-            document.getElementById(
-                "dificuldade"
-            ).value
-        );
+    const dificuldadeElemento = document.getElementById("dificuldade");
 
-    const tempo =
-        inicioQuestao
-            ? Math.round(
-                (Date.now() -
-                    inicioQuestao) /
-                1000
-            )
-            : 0;
+    const dificuldade = dificuldadeElemento
+        ? Number(dificuldadeElemento.value)
+        : 2;
 
-    const correta =
-        alternativaSelecionada ===
-        Number(q.correta);
+    const tempo = inicioQuestao
+        ? Math.round((Date.now() - inicioQuestao) / 1000)
+        : 0;
+
+    const correta = alternativaSelecionada === q.correta;
 
     respostas.push({
 
-        questao:
-            questaoAtual + 1,
+        questao: questaoAtual + 1,
 
-        estrategia:
-            q.estrategia,
+        estrategia: q.estrategia,
 
-        resposta:
-            alternativaSelecionada,
+        resposta: alternativaSelecionada,
 
-        correta:
-            correta,
+        correta: correta,
 
-        dificuldade:
-            dificuldade,
+        dificuldade: dificuldade,
 
-        tempo:
-            tempo
+        tempo: tempo
     });
 
     mostrarFeedback(
         correta
-            ? "Resposta correta. " +
-              (q.explicacao || "")
-            : "Resposta registrada. " +
-              (q.explicacao || ""),
+            ? "Resposta correta. " + q.explicacao
+            : "Resposta registrada. " + q.explicacao,
         correta
     );
 
-    document
-        .getElementById(
-            "registrarResposta"
-        )
-        .classList.add("oculto");
+    const registrar = document.getElementById("registrarResposta");
+    const proxima = document.getElementById("proxima");
 
-    document
-        .getElementById(
-            "registrarResposta"
-        )
-        .disabled = true;
+    if (registrar) {
+        registrar.classList.add("oculto");
+        registrar.disabled = true;
+    }
 
-    document
-        .getElementById(
-            "proxima"
-        )
-        .classList.remove("oculto");
+    if (proxima) {
+        proxima.classList.remove("oculto");
+    }
 }
 
-function mostrarFeedback(
-    mensagem,
-    correta
-) {
+// ============================================================
+// FEEDBACK
+// ============================================================
 
-    const feedback =
-        document.getElementById(
-            "feedback"
-        );
+function mostrarFeedback(mensagem, correta) {
 
-    feedback.textContent =
-        mensagem;
+    const feedback = document.getElementById("feedback");
+
+    if (!feedback) {
+        return;
+    }
+
+    feedback.textContent = mensagem;
 
     feedback.classList.remove(
         "oculto",
@@ -746,131 +699,109 @@ function mostrarFeedback(
     );
 
     feedback.classList.add(
-        correta
-            ? "correta"
-            : "incorreta"
+        correta ? "correta" : "incorreta"
     );
 
     feedback.hidden = false;
 }
 
+// ============================================================
+// PRÓXIMA QUESTÃO
+// ============================================================
+
 async function proximaQuestao() {
 
     questaoAtual++;
 
-    if (
-        questaoAtual <
-        questoes.length
-    ) {
-
+    if (questaoAtual < questoes.length) {
         mostrarQuestao();
-
         return;
     }
 
-    if (
-        questoesAdaptativas.length === 0
-    ) {
+    // Terminou as 18 iniciais: gerar as 6 adaptativas.
+    if (questoesAdaptativas.length === 0) {
 
         await prepararAdaptativas();
 
         return;
     }
 
+    // Terminou as 6 adaptativas.
     finalizarAvaliacao();
 }
 
+// ============================================================
+// SEGUNDA CHAMADA À GEMINI
+// REPETIÇÃO ADAPTATIVA
+// ============================================================
+
 async function prepararAdaptativas() {
+
+    if (carregandoAdaptativas) {
+        return;
+    }
+
+    carregandoAdaptativas = true;
 
     mostrarTela("adaptacao");
 
-    document.getElementById(
-        "statusAdaptacao"
-    ).textContent =
-        "A IA está analisando seu desempenho e preparando atividades adaptadas...";
+    const status = document.getElementById("statusAdaptacao");
+
+    if (status) {
+        status.textContent =
+            "A IA está analisando as respostas e preparando 6 questões de repetição adaptativa...";
+    }
 
     try {
 
-        const desempenho =
-            calcularDesempenho();
+        const desempenho = calcularDesempenho();
 
-        estrategiaEscolhida =
-            escolherEstrategia(
-                desempenho
-            );
+        estrategiaEscolhida = escolherEstrategia(desempenho);
 
-        const payload = {
+        const resultado = await fazerRequisicao({
 
-            action:
-                "gerar_adaptativas",
+            action: "gerar_adaptativas",
 
-            aluno:
-                dadosAluno,
+            aluno: dadosAluno,
 
-            estrategiaSelecionada:
-                estrategiaEscolhida,
+            estrategiaSelecionada: estrategiaEscolhida,
 
-            desempenho:
-                desempenho,
+            desempenho: desempenho,
 
-            respostas:
-                respostas,
+            respostas: respostas,
 
-            quantidade:
-                6
-        };
+            quantidade: 6
 
-        const resultado =
-            await fazerRequisicao(
-                payload
-            );
+        });
 
-        if (
-            !resultado.questoes ||
-            !Array.isArray(
-                resultado.questoes
-            )
-        ) {
-
-            throw new Error(
-                "A IA não retornou as atividades adaptativas."
-            );
+        if (!Array.isArray(resultado.questoes)) {
+            throw new Error("A IA não retornou as questões adaptativas.");
         }
 
-        if (
-            resultado.questoes.length !== 6
-        ) {
-
+        if (resultado.questoes.length !== 6) {
             throw new Error(
-                "A IA retornou " +
+                "Foram recebidas " +
                 resultado.questoes.length +
-                " atividades adaptativas. Eram esperadas 6."
+                " questões adaptativas. Eram esperadas 6."
             );
         }
 
-        questoesAdaptativas =
-            resultado.questoes.map(
-                function (q) {
+        questoesAdaptativas = resultado.questoes.map(function (q) {
 
-                    const n =
-                        normalizarQuestao(q);
+            const normalizada = normalizarQuestao(q);
 
-                    n.estrategia =
-                        "Repetição adaptativa";
+            normalizada.estrategia = ESTRATEGIA_ADAPTATIVA;
 
-                    return n;
-                }
-            );
+            return normalizada;
+        });
 
-        questoes =
-            questoesIniciais.concat(
-                questoesAdaptativas
-            );
+        // A repetição adaptativa é adicionada à avaliação.
+        questoes = questoesIniciais.concat(questoesAdaptativas);
 
-        document.getElementById(
-            "statusAdaptacao"
-        ).textContent =
-            "As 6 atividades adaptativas foram preparadas.";
+        if (status) {
+            status.textContent =
+                "As 6 questões de repetição adaptativa foram preparadas.";
+        }
 
         await esperar(700);
 
@@ -882,38 +813,37 @@ async function prepararAdaptativas() {
 
     } catch (erro) {
 
-        document.getElementById(
-            "statusAdaptacao"
-        ).textContent =
-            "Erro ao preparar as atividades adaptativas: " +
-            erro.message;
+        if (status) {
+            status.textContent =
+                "Erro ao preparar a repetição adaptativa: " +
+                erro.message;
+        }
+
+        console.error(erro);
+
+    } finally {
+
+        carregandoAdaptativas = false;
     }
 }
+
+// ============================================================
+// CÁLCULO DE DESEMPENHO DAS TRÊS ESTRATÉGIAS INICIAIS
+// ============================================================
 
 function calcularDesempenho() {
 
     const resultado = {};
 
-    [
-        "Divisão em etapas",
-        "Apoio visual",
-        "Instruções claras"
-    ].forEach(function (estrategia) {
+    ESTRATEGIAS_INICIAIS.forEach(function (estrategia) {
 
-        const lista =
-            respostas.filter(
-                function (r) {
-                    return (
-                        r.estrategia ===
-                        estrategia
-                    );
-                }
-            );
+        const lista = respostas.filter(function (resposta) {
+            return resposta.estrategia === estrategia;
+        });
 
-        if (!lista.length) {
+        if (lista.length === 0) {
 
             resultado[estrategia] = {
-
                 acertos: 0,
                 total: 0,
                 percentual: 0,
@@ -924,96 +854,67 @@ function calcularDesempenho() {
             return;
         }
 
-        const acertos =
-            lista.filter(
-                function (r) {
-                    return r.correta;
-                }
-            ).length;
+        const acertos = lista.filter(function (resposta) {
+            return resposta.correta;
+        }).length;
 
-        const tempo =
-            lista.reduce(
-                function (soma, r) {
-                    return soma +
-                        Number(
-                            r.tempo || 0
-                        );
-                },
-                0
-            ) / lista.length;
+        const tempoTotal = lista.reduce(function (soma, resposta) {
+            return soma + Number(resposta.tempo || 0);
+        }, 0);
 
-        const dificuldade =
-            lista.reduce(
-                function (soma, r) {
-                    return soma +
-                        Number(
-                            r.dificuldade || 0
-                        );
-                },
-                0
-            ) / lista.length;
+        const dificuldadeTotal = lista.reduce(function (soma, resposta) {
+            return soma + Number(resposta.dificuldade || 0);
+        }, 0);
 
         resultado[estrategia] = {
 
-            acertos:
-                acertos,
+            acertos: acertos,
 
-            total:
-                lista.length,
+            total: lista.length,
 
-            percentual:
-                Math.round(
-                    (acertos /
-                        lista.length) *
-                    100
-                ),
+            percentual: Math.round(
+                (acertos / lista.length) * 100
+            ),
 
-            tempo_medio:
-                Math.round(tempo),
+            tempo_medio: Number(
+                (tempoTotal / lista.length).toFixed(2)
+            ),
 
-            dificuldade_media:
-                Number(
-                    dificuldade.toFixed(2)
-                )
+            dificuldade_media: Number(
+                (dificuldadeTotal / lista.length).toFixed(2)
+            )
         };
     });
 
     return resultado;
 }
 
-function escolherEstrategia(
-    desempenho
-) {
+// ============================================================
+// ESCOLHER ESTRATÉGIA COM MELHOR RESULTADO
+// ============================================================
 
-    let melhor =
-        "Divisão em etapas";
+function escolherEstrategia(desempenho) {
 
+    let melhor = ESTRATEGIAS_INICIAIS[0];
     let maior = -1;
 
-    [
-        "Divisão em etapas",
-        "Apoio visual",
-        "Instruções claras"
-    ].forEach(function (estrategia) {
+    ESTRATEGIAS_INICIAIS.forEach(function (estrategia) {
 
-        const dados =
-            desempenho[estrategia];
+        const dados = desempenho[estrategia];
 
-        if (
-            dados &&
-            dados.percentual > maior
-        ) {
+        if (dados && dados.percentual > maior) {
 
-            maior =
-                dados.percentual;
-
-            melhor =
-                estrategia;
+            maior = dados.percentual;
+            melhor = estrategia;
         }
     });
 
     return melhor;
 }
+
+// ============================================================
+// FINALIZAR A AVALIAÇÃO
+// ============================================================
 
 function finalizarAvaliacao() {
 
@@ -1023,365 +924,501 @@ function finalizarAvaliacao() {
 
     avaliacaoFinalizada = true;
 
-    const desempenho =
-        calcularDesempenho();
+    const desempenho = calcularDesempenho();
 
     mostrarTela("resultado");
 
-    preencherResultados(
-        desempenho
-    );
+    preencherResultados(desempenho);
 }
 
-function preencherResultados(
-    desempenho
-) {
+// ============================================================
+// EXIBIR RESULTADOS
+// ============================================================
 
-    const estrategias = [
-        "Divisão em etapas",
-        "Apoio visual",
-        "Instruções claras"
-    ];
+function preencherResultados(desempenho) {
 
-    estrategias.forEach(
-        function (nome, indice) {
+    ESTRATEGIAS_INICIAIS.forEach(function (nome, indice) {
 
-            const dados =
-                desempenho[nome];
+        const dados = desempenho[nome];
 
-            const elemento =
-                document.getElementById(
-                    "resultado" +
-                    (indice + 1)
-                );
-
-            if (!elemento) {
-                return;
-            }
-
-            elemento.innerHTML =
-                "<strong>" +
-                escaparHTML(nome) +
-                "</strong>" +
-                "<span>" +
-                dados.percentual +
-                "% de acertos</span>";
-        }
-    );
-
-    const adaptativas =
-        respostas.filter(
-            function (r) {
-                return (
-                    r.estrategia ===
-                    "Repetição adaptativa"
-                );
-            }
+        const elemento = document.getElementById(
+            "resultado" + (indice + 1)
         );
+
+        if (!elemento) {
+            return;
+        }
+
+        elemento.textContent =
+            nome + " — " + dados.percentual + "% de acertos";
+    });
+
+    const respostasAdaptativas = respostas.filter(function (resposta) {
+        return resposta.estrategia === ESTRATEGIA_ADAPTATIVA;
+    });
 
     let percentualAdaptativo = 0;
 
-    if (adaptativas.length) {
+    if (respostasAdaptativas.length > 0) {
 
-        const acertos =
-            adaptativas.filter(
-                function (r) {
-                    return r.correta;
-                }
-            ).length;
+        const acertos = respostasAdaptativas.filter(function (resposta) {
+            return resposta.correta;
+        }).length;
 
-        percentualAdaptativo =
-            Math.round(
-                (acertos /
-                    adaptativas.length) *
-                100
-            );
+        percentualAdaptativo = Math.round(
+            (acertos / respostasAdaptativas.length) * 100
+        );
     }
 
-    const resultado4 =
-        document.getElementById(
-            "resultado4"
-        );
+    const resultado4 = document.getElementById("resultado4");
 
     if (resultado4) {
-
-        resultado4.innerHTML =
-            "<strong>Repetição adaptativa</strong>" +
-            "<span>" +
+        resultado4.textContent =
+            "Repetição adaptativa — " +
             percentualAdaptativo +
-            "% de acertos</span>";
+            "% de acertos";
     }
 
-    const mensagem =
-        document.getElementById(
-            "mensagemResultado"
-        );
+    const mensagem = document.getElementById("mensagemResultado");
 
     if (mensagem) {
 
         mensagem.textContent =
-            "A estratégia com maior percentual de acertos na etapa inicial foi " +
+            "A estratégia com maior percentual de acertos na avaliação inicial foi " +
             estrategiaEscolhida +
-            ". A etapa adaptativa foi criada a partir desse desempenho.";
+            ". A repetição adaptativa foi gerada separadamente, considerando o desempenho registrado.";
     }
 }
 
-function mostrarAtividades() {
+// ============================================================
+// TERCEIRA CHAMADA À GEMINI
+// GERAÇÃO DAS 10 ATIVIDADES ADAPTADAS
+// ============================================================
 
-    const lista =
-        document.getElementById(
-            "listaAtividades"
+async function mostrarAtividades() {
+
+    if (carregandoAtividadesAdaptadas) {
+        return;
+    }
+
+    const lista = document.getElementById("listaAtividades");
+
+    if (!lista) {
+        console.error("Elemento listaAtividades não encontrado.");
+        return;
+    }
+
+    // Evita gerar novamente quando as atividades já existem.
+    if (atividadesAdaptadas.length === 0) {
+
+        carregandoAtividadesAdaptadas = true;
+
+        lista.textContent =
+            "A IA está preparando as 10 atividades adaptadas...";
+
+        try {
+
+            const desempenho = calcularDesempenho();
+
+            const resultado = await fazerRequisicao({
+
+                action: "gerar_atividades_adaptadas",
+
+                aluno: dadosAluno,
+
+                estrategiaSelecionada: estrategiaEscolhida,
+
+                desempenho: desempenho,
+
+                respostas: respostas,
+
+                questoesIniciais: questoesIniciais.map(function (q) {
+                    return {
+                        pergunta: q.pergunta,
+                        estrategia: q.estrategia
+                    };
+                }),
+
+                questoesRepeticao: questoesAdaptativas.map(function (q) {
+                    return {
+                        pergunta: q.pergunta,
+                        estrategia: q.estrategia
+                    };
+                }),
+
+                quantidade: 10
+            });
+
+            if (!Array.isArray(resultado.atividades)) {
+                throw new Error("A IA não retornou uma lista de atividades.");
+            }
+
+            if (resultado.atividades.length !== 10) {
+                throw new Error(
+                    "Foram recebidas " +
+                    resultado.atividades.length +
+                    " atividades. Eram esperadas 10."
+                );
+            }
+
+            validarAtividadesAdaptadas(resultado.atividades);
+
+            atividadesAdaptadas = resultado.atividades;
+
+        } catch (erro) {
+
+            lista.textContent =
+                "Não foi possível gerar as atividades adaptadas: " +
+                erro.message;
+
+            console.error(erro);
+
+            carregandoAtividadesAdaptadas = false;
+
+            return;
+        }
+
+        carregandoAtividadesAdaptadas = false;
+    }
+
+    renderizarAtividadesAdaptadas();
+
+    mostrarTela("atividades");
+}
+
+// ============================================================
+// VALIDAR AS 10 ATIVIDADES ADAPTADAS
+// ============================================================
+
+function validarAtividadesAdaptadas(atividades) {
+
+    if (atividades.length !== 10) {
+        throw new Error("A quantidade de atividades é inválida.");
+    }
+
+    const multiplaEscolha = atividades.filter(function (atividade) {
+        return atividade.tipo === "multipla_escolha";
+    });
+
+    if (multiplaEscolha.length !== 5) {
+        throw new Error(
+            "A IA deve retornar exatamente 5 atividades de múltipla escolha."
         );
+    }
+
+    const tiposObrigatorios = [
+        "completar",
+        "relacionar",
+        "interpretacao",
+        "resposta_aberta",
+        "resolucao"
+    ];
+
+    tiposObrigatorios.forEach(function (tipo) {
+
+        const quantidade = atividades.filter(function (atividade) {
+            return atividade.tipo === tipo;
+        }).length;
+
+        if (quantidade !== 1) {
+            throw new Error(
+                "A IA deve retornar exatamente uma atividade do tipo " +
+                tipo +
+                "."
+            );
+        }
+    });
+
+    atividades.forEach(function (atividade, indice) {
+
+        if (!atividade.enunciado) {
+            throw new Error(
+                "A atividade " + (indice + 1) + " está sem enunciado."
+            );
+        }
+
+        if (atividade.tipo === "multipla_escolha") {
+
+            if (
+                !Array.isArray(atividade.alternativas) ||
+                atividade.alternativas.length !== 4
+            ) {
+                throw new Error(
+                    "A atividade de múltipla escolha " +
+                    (indice + 1) +
+                    " deve possuir quatro alternativas."
+                );
+            }
+
+            const correta = Number(atividade.resposta_correta);
+
+            if (
+                !Number.isInteger(correta) ||
+                correta < 0 ||
+                correta > 3
+            ) {
+                throw new Error(
+                    "A resposta correta da atividade " +
+                    (indice + 1) +
+                    " é inválida."
+                );
+            }
+        }
+    });
+}
+
+// ============================================================
+// EXIBIR AS 10 ATIVIDADES ADAPTADAS
+// ============================================================
+
+function renderizarAtividadesAdaptadas() {
+
+    const lista = document.getElementById("listaAtividades");
+
+    if (!lista) {
+        return;
+    }
 
     lista.innerHTML = "";
 
-    questoesAdaptativas.forEach(
-        function (q, indice) {
+    atividadesAdaptadas.forEach(function (atividade, indice) {
 
-            const atividade =
-                document.createElement(
-                    "div"
-                );
+        const card = document.createElement("div");
+        card.className = "atividade";
 
-            atividade.className =
-                "atividade";
+        const titulo = document.createElement("h3");
 
-            const titulo =
-                document.createElement(
-                    "h3"
-                );
+        titulo.textContent =
+            "Atividade " +
+            (indice + 1) +
+            " — " +
+            rotuloTipoAtividade(atividade.tipo);
 
-            titulo.textContent =
-                "Atividade " +
-                (indice + 1);
+        card.appendChild(titulo);
 
-            const pergunta =
-                document.createElement(
-                    "p"
-                );
+        if (atividade.texto_base) {
 
-            pergunta.textContent =
-                q.pergunta;
+            const textoBase = document.createElement("p");
 
-            atividade.appendChild(
-                titulo
-            );
+            textoBase.textContent = atividade.texto_base;
 
-            atividade.appendChild(
-                pergunta
-            );
-
-            q.alternativas.forEach(
-                function (alt, i) {
-
-                    const div =
-                        document.createElement(
-                            "div"
-                        );
-
-                    div.textContent =
-                        String.fromCharCode(
-                            65 + i
-                        ) +
-                        ") " +
-                        alt;
-
-                    atividade.appendChild(
-                        div
-                    );
-                }
-            );
-
-            lista.appendChild(
-                atividade
-            );
+            card.appendChild(textoBase);
         }
-    );
 
-    mostrarTela(
-        "atividades"
-    );
+        const enunciado = document.createElement("p");
+
+        enunciado.textContent = atividade.enunciado;
+
+        card.appendChild(enunciado);
+
+        const tipo = atividade.tipo;
+
+        if (tipo === "multipla_escolha") {
+
+            atividade.alternativas.forEach(function (alternativa, i) {
+
+                const item = document.createElement("p");
+
+                item.textContent =
+                    String.fromCharCode(65 + i) +
+                    ") " +
+                    alternativa;
+
+                card.appendChild(item);
+            });
+
+        } else if (tipo === "completar") {
+
+            if (atividade.frase_com_lacunas) {
+
+                const frase = document.createElement("p");
+
+                frase.textContent = atividade.frase_com_lacunas;
+
+                card.appendChild(frase);
+            }
+
+            if (
+                Array.isArray(atividade.opcoes_palavras) &&
+                atividade.opcoes_palavras.length > 0
+            ) {
+
+                const opcoes = document.createElement("p");
+
+                opcoes.textContent =
+                    "Banco de palavras: " +
+                    atividade.opcoes_palavras.join(" | ");
+
+                card.appendChild(opcoes);
+            }
+
+        } else if (tipo === "relacionar") {
+
+            const colunaA = document.createElement("p");
+            const colunaB = document.createElement("p");
+
+            colunaA.textContent =
+                "Coluna A: " +
+                (Array.isArray(atividade.coluna_a)
+                    ? atividade.coluna_a.join("; ")
+                    : "");
+
+            colunaB.textContent =
+                "Coluna B: " +
+                (Array.isArray(atividade.coluna_b)
+                    ? atividade.coluna_b.join("; ")
+                    : "");
+
+            card.appendChild(colunaA);
+            card.appendChild(colunaB);
+        }
+
+        if (atividade.orientacao) {
+
+            const orientacao = document.createElement("p");
+
+            orientacao.className = "atividade-orientacao";
+
+            orientacao.textContent =
+                "Orientação: " + atividade.orientacao;
+
+            card.appendChild(orientacao);
+        }
+
+        lista.appendChild(card);
+    });
 }
+
+// ============================================================
+// NOMES DOS TIPOS DE ATIVIDADE
+// ============================================================
+
+function rotuloTipoAtividade(tipo) {
+
+    const rotulos = {
+
+        multipla_escolha: "Múltipla escolha",
+
+        completar: "Complete",
+
+        relacionar: "Relacione",
+
+        interpretacao: "Interpretação",
+
+        resposta_aberta: "Resposta aberta",
+
+        resolucao: "Resolução de exercício"
+    };
+
+    return rotulos[tipo] || "Atividade adaptada";
+}
+
+// ============================================================
+// REINICIAR A AVALIAÇÃO
+// ============================================================
 
 function reiniciar() {
 
     dadosAluno = {};
-    questoes = [];
-    respostas = [];
-    questaoAtual = 0;
-    inicioQuestao = null;
-    alternativaSelecionada = null;
-    questoesIniciais = [];
-    questoesAdaptativas = [];
-    estrategiaEscolhida = "";
-    avaliacaoFinalizada = false;
 
-    const form =
-        document.getElementById(
-            "formAvaliacao"
-        );
+    limparDadosAvaliacao();
+
+    const form = document.getElementById("formAvaliacao");
 
     if (form) {
         form.reset();
     }
 
-    const btn =
-        document.getElementById(
-            "btnIniciarExercicios"
-        );
+    const botao = document.getElementById("btnIniciarExercicios");
 
-    if (btn) {
+    if (botao) {
+        botao.hidden = true;
+        botao.disabled = true;
+        botao.classList.add("oculto");
+    }
 
-        btn.classList.add("oculto");
-        btn.hidden = true;
-        btn.disabled = true;
+    const erro = document.getElementById("erroConfiguracao");
+
+    if (erro) {
+        erro.textContent = "";
+        erro.classList.add("oculto");
+        erro.hidden = true;
     }
 
     mostrarTela("inicio");
 }
 
-async function fazerRequisicao(
-    payload
-) {
+// ============================================================
+// COMUNICAÇÃO COM O GOOGLE APPS SCRIPT
+// ============================================================
+
+async function fazerRequisicao(payload) {
 
     let resposta;
 
     try {
 
-        resposta =
-            await fetch(
-                API_URL,
-                {
-                    method: "POST",
+        resposta = await fetch(API_URL, {
 
-                    headers: {
-                        "Content-Type":
-                            "text/plain;charset=utf-8"
-                    },
+            method: "POST",
 
-                    body:
-                        JSON.stringify(
-                            payload
-                        ),
+            headers: {
+                "Content-Type": "text/plain;charset=utf-8"
+            },
 
-                    redirect:
-                        "follow"
-                }
-            );
+            body: JSON.stringify(payload),
+
+            redirect: "follow"
+        });
 
     } catch (erro) {
 
         throw new Error(
-            "Não foi possível conectar ao servidor: " +
-            erro.message
+            "Não foi possível conectar ao servidor. Verifique a internet e a implantação do Apps Script."
         );
     }
 
-    const texto =
-        await resposta.text();
+    const texto = await resposta.text();
 
-    console.log(
-        "Status HTTP:",
-        resposta.status
-    );
-
-    console.log(
-        "Resposta do Apps Script:",
-        texto
-    );
-
-    if (
-        !texto ||
-        !texto.trim()
-    ) {
-
-        throw new Error(
-            "O servidor não retornou nenhum conteúdo."
-        );
+    if (!texto || !texto.trim()) {
+        throw new Error("O servidor não retornou nenhum conteúdo.");
     }
 
     let dados;
 
     try {
 
-        dados =
-            JSON.parse(texto);
+        dados = JSON.parse(texto);
 
     } catch (erro) {
 
-        console.error(
-            "Resposta completa:",
-            texto
-        );
+        console.error("Resposta recebida:", texto);
 
         throw new Error(
-            "O Apps Script não retornou JSON. " +
-            "Resposta recebida: " +
-            texto.substring(0, 500)
+            "O Apps Script não retornou JSON válido. Verifique se a implantação está atualizada."
         );
     }
 
-    if (
-        dados &&
-        dados.ok === false
-    ) {
-
-        throw new Error(
-            dados.erro ||
-            "Erro desconhecido no servidor."
-        );
+    if (!dados || typeof dados !== "object") {
+        throw new Error("O servidor retornou dados inválidos.");
     }
 
-    if (
-        !dados ||
-        typeof dados !== "object"
-    ) {
-
+    if (dados.ok === false) {
         throw new Error(
-            "O servidor retornou dados inválidos."
+            dados.erro || "Ocorreu um erro no servidor."
         );
     }
 
     return dados;
 }
 
-function escaparHTML(valor) {
-
-    return String(
-        valor == null
-            ? ""
-            : valor
-    )
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-        .replace(
-            /</g,
-            "&lt;"
-        )
-        .replace(
-            />/g,
-            "&gt;"
-        )
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-        .replace(
-            /'/g,
-            "&#039;"
-        );
-}
+// ============================================================
+// UTILITÁRIOS
+// ============================================================
 
 function esperar(ms) {
 
-    return new Promise(
-        function (resolve) {
-            setTimeout(
-                resolve,
-                ms
-            );
-        }
-    );
+    return new Promise(function (resolve) {
+        setTimeout(resolve, ms);
+    });
 }
